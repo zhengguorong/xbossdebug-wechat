@@ -67,5 +67,14 @@ xbossdebug.methodBlacklist = ["foo", "bar"]; // 监听黑名单
 
 
 
-### [源码解析]()
+### [方案设计思想](https://github.com/zhengguorong/xbossdebug/blob/master/design.md)
+
+
+
+### TODO
+
+1. 开发服务端记录数据
+2. 统计数据并可视化
+3. 开发网站监控
+4. 加入性能与体验指标收集
 
