@@ -1,6 +1,20 @@
 # xbossdebug  网站/小程序bug监控工具
 
-#### 小程序使用
+### 应用场景
+
+**监听线上未知错误**
+
+```
+// 例如：调用错误
+var result = {}
+console.log(result.data.msg) // 抛出错误
+```
+
+**记录错误执行堆栈**
+
+![](/Users/zhengguorong/project/xbossdebug/README.png)
+
+### 小程序使用
 
 ##### 1、引入资源
 
