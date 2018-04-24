@@ -12,7 +12,7 @@ console.log(result.data.msg) // 抛出错误
 
 **记录错误执行堆栈**
 
-![](/Users/zhengguorong/project/xbossdebug/README.png)
+![](./README.png)
 
 ### 小程序使用
 
