@@ -137,7 +137,7 @@ function onHide() {
 
 var version = '0.0.1', // 插件版本
   reqParams = {
-    version
+    notifierVersion: version
   },
   breadcrumbs = [], // 用于记录出错前函数执行路径
   activePage, // 当前打开页面实例，用于获取相关参数
@@ -153,7 +153,7 @@ var version = '0.0.1', // 插件版本
         reqParams.error = err
         reqParams.time = now();
         wx.request({
-          url: "https://yourdomain.com",
+          url: xbossDebug.url,
           method: "POST",
           data: reqParams
         })
