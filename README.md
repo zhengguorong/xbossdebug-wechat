@@ -25,6 +25,7 @@ console.log(result.data.msg) // 抛出错误
 ```
 var xbossdebug = require('xbossdebug.js') // 引用xbossdebug
 xbossdebug.apikey = 'maizuo' // apikey为自定义唯一值，用于后端记录时区分应用
+xbossdebug.url = 'https://domain.com/'; // 上报服务端地址
 ```
 
 ##### 2、测试是否正常使用
@@ -73,8 +74,11 @@ xbossdebug.methodBlacklist = ["foo", "bar"]; // 监听黑名单
 
 ### TODO
 
-1. 开发服务端记录数据
-2. 统计数据并可视化
-3. 开发网站监控
-4. 加入性能与体验指标收集
+1. 服务端记录数据
+2. 数据并可视化
+3. 用户数据统计
+4. 资源加载监控
+5. 页面性能监控
+6. typescript版本
+7. 自动化测试
 
