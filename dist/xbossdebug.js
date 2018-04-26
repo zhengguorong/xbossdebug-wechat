@@ -71,7 +71,21 @@ function recordPageFn(page, methodName) {
     }
     "onLoad" === methodName && (breadcrumb.args = arguments)
     methodFilter(methodName) && pushToBreadcrumb(breadcrumb)
+    recordPagePreformance(page, methodName) // 记录页面性能
     method && method.apply(this, arguments)
+  }
+}
+
+// 记录page加载性能
+function recordPagePreformance(page, methodName) {
+  if (methodName === 'onLoad' || methodName === 'onReady') {
+    // 记录页面从onLoad到onReady消耗时间
+    timing[activePage.route] || (timing[activePage.route] = {})
+    if ("onLoad" === methodName && activePage) timing[activePage.route]["onLoadTime"] = now()
+    if ("onReady" === methodName && activePage) {
+      timing[activePage.route]["onReadyTime"] = now()
+      timing[activePage.route]["renderTime"] = timing[activePage.route]["onReadyTime"] - timing[activePage.route]["onLoadTime"]
+    }
   }
 }
 
@@ -84,6 +98,17 @@ function methodFilter(methodName) {
   return isCanExcute
 }
 
+// 发送性能信息到服务器
+function notifyPreformance() {
+  reqParams.timing = timing
+  reqParams.time = now()
+  wx.request({
+    url: xbossDebug.url,
+    method: "POST",
+    data: reqParams
+  })
+}
+
 // 获取当前时间戳
 function now() {
   return (new Date).getTime()
@@ -91,6 +116,9 @@ function now() {
 
 // 应用初始化记录信息
 function onLaunch(route) {
+  reqParams.apikey = xbossDebug.apikey
+  reqParams.appVersion = xbossDebug.appVersion
+  reqParams.releaseStage = xbossDebug.releaseStage || "production"
   getNetworkType() // 获取网络连接信息
   xbossDebug.setSystemInfo && getSystemInfo()
   xbossDebug.setLocation && getLocation()
@@ -104,6 +132,7 @@ function onLaunch(route) {
     query: route.query, // 页面参数
     scene: route.scene // 场景编号
   };
+  
   pushToBreadcrumb(breadcrumb) // 把执行对象加入到面包屑中
 }
 
@@ -129,10 +158,12 @@ function onHide() {
     time: now(),
     belong: "App",
     method: "onHide",
-    route: pages.route,
-    options: pages.options
+    route: activePage.route,
+    options: activePage.options
   };
   pushToBreadcrumb(breadcrumb)
+  // 发送性能数据
+  notifyPreformance()
 }
 
 var version = '0.0.1', // 插件版本
@@ -140,18 +171,16 @@ var version = '0.0.1', // 插件版本
     notifierVersion: version
   },
   breadcrumbs = [], // 用于记录出错前函数执行路径
-  activePage, // 当前打开页面实例，用于获取相关参数
+  timing = {}, // 用户记录页面加载时间 
+  activePage = {}, // 当前打开页面实例，用于获取相关参数
   // 外部可访问对象
   xbossDebug = {
     // 发送错误信息到服务器
     notifyError: function (err) {
       if (xbossDebug.apikey && err && !xbossDebug.silent) {
-        reqParams.apikey = xbossDebug.apikey
-        reqParams.appVersion = xbossDebug.appVersion
-        reqParams.releaseStage = xbossDebug.releaseStage || "production"
         reqParams.breadcrumbs = breadcrumbs
         reqParams.error = err
-        reqParams.time = now();
+        reqParams.time = now()
         wx.request({
           url: xbossDebug.url,
           method: "POST",
@@ -187,7 +216,7 @@ var originPage = Page,
 Page = function (page) {
   // 记录page生命周期函数
   pageHookMethods.forEach(function (hookName) {
-    page[hookName] && recordPageFn(page, hookName)
+    (page[hookName] || (hookName === 'onReady' || hookName === 'onLoad')) && recordPageFn(page, hookName)
   })
   // 记录用户自定义函数
   xbossDebug.monitorMethodCall && Object.keys(page).forEach(function (fn) {
