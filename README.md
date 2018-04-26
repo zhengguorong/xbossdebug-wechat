@@ -52,6 +52,7 @@ App({
     appVersion: String // 小程序版本
     locationInfo: Object // 用户位置信息
     userInfo: Object // 用户信息
+    timing: Object // 页面加载耗时
 }
 ```
 
@@ -76,9 +77,8 @@ xbossdebug.methodBlacklist = ["foo", "bar"]; // 监听黑名单
 
 1. 服务端记录数据
 2. 数据并可视化
-3. 用户数据统计
-4. 资源加载监控
-5. 页面性能监控
-6. typescript版本
-7. 自动化测试
+3. 资源加载监控
+4. 页面性能监控
+5. typescript版本
+6. 自动化测试
 
