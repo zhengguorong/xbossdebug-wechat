@@ -1,4 +1,4 @@
-# xbossdebug  网站/小程序bug监控工具
+# xbossdebug  小程序bug监控工具
 
 ### 应用场景
 
