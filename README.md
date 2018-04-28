@@ -1,5 +1,11 @@
 # xbossdebug  小程序bug监控工具
 
+### 声明
+
+**代码思想参考[fundebug](https://www.fundebug.com/)，如果大家觉得还不错，希望大家支持fundebug的saas服务。**
+
+
+
 ### 应用场景
 
 1、监听线上未知错误
@@ -87,6 +93,3 @@ xbossdebug.methodBlacklist = ["foo", "bar"]; // 监听黑名单
 
 
 
-#### 声明
-
-代码思想参考[fundebug](https://www.fundebug.com/)，如果大家觉得还不错，希望大家支持fundebug的saas服务。
