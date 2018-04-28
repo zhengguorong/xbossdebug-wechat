@@ -82,3 +82,9 @@ xbossdebug.methodBlacklist = ["foo", "bar"]; // 监听黑名单
 5. typescript版本
 6. 自动化测试
 
+
+
+
+#### 声明
+
+代码思想参考[fundebug](https://www.fundebug.com/)，如果大家觉得还不错，希望大家支持fundebug的saas服务。
