@@ -51,10 +51,12 @@ module.exports = {
   record
 }
 ```
+
+
 **抽取模版代码**
 简单收集，产生了大量模版代码，我们希望可以把模版代码移到统一到地方管理
+
 ```
-// libs/xbossdebug.js代码
 // 保存App的上下文 
 var originApp = App
 // 为了插入自定义代码到App生命周期，重新定义App对象
@@ -81,18 +83,14 @@ App = function(app) {
   // 执行原App对象
   originApp(app)
 }
-
-var fnExcutePath = []
-function record (msg) {
-  fnExcutePath.push(msg)
-  console.log(fnExcutePath)
-}
-module.exports = {
-  record
-}
 ```
 
+
+
+
+
 **优化重复代码**
+
 ```
 // 合并执行函数
 function mergeMethod(app, key, method) {
