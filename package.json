@@ -2,9 +2,13 @@
   "name": "xbossdebug-wechat",
   "version": "1.0.0",
   "description": "### 声明",
-  "main": "index.js",
+  "main": "dist/xbossdebug.min.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "jshint -c .jshintrc src",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js",
+    "build": " rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.min.js,uglify",
+    "watch": "rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js -w"
   },
   "repository": {
     "type": "git",
