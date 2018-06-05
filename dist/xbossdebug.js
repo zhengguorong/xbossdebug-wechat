@@ -1,230 +1,488 @@
-// 获取网络状态 wifi/2g/3g/4g/unknown(Android下不常见的网络类型)/none(无网络)
-function getNetworkType() {
-  wx.getNetworkType({
-    success: function (res) {
-      reqParams.networkType = res.networkType
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global.XbossDebug = factory());
+}(this, (function () {
+
+  var utils = {
+    typeDecide: function typeDecide(o, type) {
+      return Object.prototype.toString.call(o) === "[object " + type + "]";
+    },
+    isFunction: function isFunction(f) {
+      return utils.typeDecide(f, "Function");
+    },
+    isString: function isString(f) {
+      return utils.typeDecide(f, "String");
+    },
+    serializeObj: function serializeObj(obj) {
+      var parames = "";
+      Object.keys(obj).forEach(function (name) {
+        if (utils.typeDecide(obj[name], "Object")) {
+          parames += name + "=" + utils.stringify(obj[name]);
+        } else {
+          parames += name + "=" + obj[name] + "^";
+        }
+      });
+      return encodeURIComponent(parames.substr(0, parames.length - 1));
+    },
+    assignObject: function assignObject(obj1, obj2) {
+      for (var name in obj2) {
+        if (obj2.hasOwnProperty(name)) {
+          obj1[name] = obj2[name];
+        }
+      }
+      return obj1;
+    },
+    noop: function noop() {},
+    now: function now() {
+      return new Date().getTime();
     }
-  })
-}
-
-// 获取设备信息
-function getSystemInfo() {
-  wx.getSystemInfo({
-    success: function (res) {
-      reqParams.systemInfo = res
-    }
-  })
-}
-
-// 获取当前的地理位置、速度。
-function getLocation() {
-  wx.getLocation({
-    type: "wgs84",
-    success: function (res) {
-      reqParams.locationInfo = res
-    }
-  })
-}
-
-// 获取用户信息
-function getUserInfo() {
-  wx.getUserInfo({
-    success: function (res) {
-      reqParams.userInfo = res.userInfo
-    }
-  })
-}
-
-// 获取当前显示的页面
-function getActivePage() {
-  var curPages = getCurrentPages();
-  if (curPages.length) return curPages[curPages.length - 1]
-}
-
-// 记录函数执行情况，最多记录20个
-function pushToBreadcrumb(obj) {
-  breadcrumbs.push(obj), breadcrumbs.length > 20 && breadcrumbs.shift()
-}
-
-// 记录App对象里的方法执行
-function recordAppFn(app, key, method) {
-  var oldMethod = app[key]; // 暂存原方法定义
-  // 合并方法
-  app[key] = function (app) {
-    method.call(this, app)
-    oldMethod && oldMethod.call(this, app)
-  }
-}
-
-// 记录Page对象里的方法执行
-function recordPageFn(page, methodName) {
-  var method = page[methodName]
-  page[methodName] = function () {
-    if ("onLoad" === methodName || "onShow" === methodName) (activePage = getActivePage())
-    var breadcrumb = {
-      type: "function",
-      time: now(),
-      belong: "Page",
-      method: methodName,
-      route: activePage && activePage.route,
-      options: activePage && activePage.options
-    }
-    "onLoad" === methodName && (breadcrumb.args = arguments)
-    methodFilter(methodName) && pushToBreadcrumb(breadcrumb)
-    recordPagePreformance(page, methodName) // 记录页面性能
-    method && method.apply(this, arguments)
-  }
-}
-
-// 记录page加载性能
-function recordPagePreformance(page, methodName) {
-  if (methodName === 'onLoad' || methodName === 'onReady') {
-    // 记录页面从onLoad到onReady消耗时间
-    timing[activePage.route] || (timing[activePage.route] = {})
-    if ("onLoad" === methodName && activePage) timing[activePage.route]["onLoadTime"] = now()
-    if ("onReady" === methodName && activePage) {
-      timing[activePage.route]["onReadyTime"] = now()
-      timing[activePage.route]["renderTime"] = timing[activePage.route]["onReadyTime"] - timing[activePage.route]["onLoadTime"]
-    }
-  }
-}
-
-// 黑白名单过滤,白名单优先级高于黑名单，当黑白名单都配置时，只有白名单生效
-function methodFilter(methodName) {
-  var methodWhitelist = xbossDebug.methodWhitelist
-  var methodBlacklist = xbossDebug.methodBlacklist
-  // 防止监听onPageScroll事件
-  var isCanExcute = "onPageScroll" !== methodName && methodWhitelist && methodWhitelist.length ? Boolean(methodWhitelist.includes(methodName)) : !methodBlacklist || !methodBlacklist.length || Boolean(!methodBlacklist.includes(methodName))
-  return isCanExcute
-}
-
-// 发送性能信息到服务器
-function notifyPreformance() {
-  reqParams.timing = timing
-  reqParams.time = now()
-  wx.request({
-    url: xbossDebug.url,
-    method: "POST",
-    data: reqParams
-  })
-}
-
-// 获取当前时间戳
-function now() {
-  return (new Date).getTime()
-}
-
-// 应用初始化记录信息
-function onLaunch(route) {
-  reqParams.apikey = xbossDebug.apikey
-  reqParams.appVersion = xbossDebug.appVersion
-  reqParams.releaseStage = xbossDebug.releaseStage || "production"
-  getNetworkType() // 获取网络连接信息
-  xbossDebug.setSystemInfo && getSystemInfo()
-  xbossDebug.setLocation && getLocation()
-  xbossDebug.setUserInfo && getUserInfo()
-  var breadcrumb = {
-    type: "function",
-    time: now(),
-    belong: "App", // 来源
-    method: "onLaunch",
-    path: route.path, // 页面路径
-    query: route.query, // 页面参数
-    scene: route.scene // 场景编号
   };
-  
-  pushToBreadcrumb(breadcrumb) // 把执行对象加入到面包屑中
-}
 
-// 应用显示记录信息
-function onShow(route) {
-  reqParams.scene = route.scene;
-  var breadcrumb = {
-    type: "function",
-    time: now(),
-    belong: "App",
-    method: "onShow",
-    path: route.path,
-    query: route.query,
-    scene: route.scene
+  var classCallCheck = function (instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
   };
-  pushToBreadcrumb(breadcrumb)
-}
 
-// 应用隐藏记录信息
-function onHide() {
-  var breadcrumb = {
-    type: "function",
-    time: now(),
-    belong: "App",
-    method: "onHide",
-    route: activePage.route,
-    options: activePage.options
-  };
-  pushToBreadcrumb(breadcrumb)
-  // 发送性能数据
-  notifyPreformance()
-}
-
-var version = '0.0.1', // 插件版本
-  reqParams = {
-    notifierVersion: version
-  },
-  breadcrumbs = [], // 用于记录出错前函数执行路径
-  timing = {}, // 用户记录页面加载时间 
-  activePage = {}, // 当前打开页面实例，用于获取相关参数
-  // 外部可访问对象
-  xbossDebug = {
-    // 发送错误信息到服务器
-    notifyError: function (err) {
-      if (xbossDebug.apikey && err && !xbossDebug.silent) {
-        reqParams.breadcrumbs = breadcrumbs
-        reqParams.error = err
-        reqParams.time = now()
-        wx.request({
-          url: xbossDebug.url,
-          method: "POST",
-          data: reqParams
-        })
+  var createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
       }
     }
-  }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var inherits = function (subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+  };
+
+  var possibleConstructorReturn = function (self, call) {
+    if (!self) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return call && (typeof call === "object" || typeof call === "function") ? call : self;
+  };
+
+  var Config = function () {
+      function Config(options) {
+          classCallCheck(this, Config);
+
+          this.config = {
+              version: '1.0.0',
+              key: '',
+              proxyAll: false,
+              mergeReport: true, // mergeReport 是否合并上报， false 关闭， true 启动（默认）
+              delay: 1000, // 当 mergeReport 为 true 可用，延迟多少毫秒，合并缓冲区中的上报（默认）
+              url: "http://debug.limesoftware.cn/read.gif", // 指定错误上报地址
+              except: [/^Script error\.?/, /^Javascript error: Script error\.? on line 0/], // 忽略某个错误
+              random: 1, // 抽样上报，1~0 之间数值，1为100%上报（默认 1）
+              repeat: 5 // 重复上报次数(对于同一个错误超过多少次不上报)
+          };
+          this.config = utils.assignObject(this.config, options);
+      }
+
+      createClass(Config, [{
+          key: 'get',
+          value: function get$$1(name) {
+              return this.config[name];
+          }
+      }, {
+          key: 'set',
+          value: function set$$1(name, value) {
+              this.config[name] = value;
+              return this.config[name];
+          }
+      }]);
+      return Config;
+  }();
+
+  /**
+   * 事件管理器
+   */
+  var Events = function Events(supperclass) {
+    return function (_supperclass) {
+      inherits(_class, _supperclass);
+
+      function _class(options) {
+        classCallCheck(this, _class);
+
+        var _this = possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, options));
+
+        _this.handlers = {};
+        return _this;
+      }
+      /**
+       * 事件注册
+       * @param {*} event 事件名字
+       * @param {*} handlers 执行函数
+       */
 
 
-// App对象生命周期函数
-var appHookMethods = {
-  onLaunch: onLaunch,
-  onShow: onShow,
-  onHide: onHide,
-  onError: xbossDebug.notifyError
-}
+      createClass(_class, [{
+        key: "on",
+        value: function on(event, handlers) {
+          this.handlers[event] = this.handlers[event] || [];
+          this.handlers[event].push(handler);
+          return this.handlers[event];
+        }
+        /**
+         * 事件注销
+         * @param {*} event 事件名字
+         */
 
-// 保存App的上下文 
-var originApp = App
-// 为了插入自定义代码到App生命周期，重新定义App对象
-App = function (app) {
-  Object.keys(appHookMethods).forEach(function (key) {
-    recordAppFn(app, key, appHookMethods[key])
-  })
-  // 执行原App对象
-  originApp(app)
-}
+      }, {
+        key: "off",
+        value: function off(event) {
+          if (this.handlers[event]) {
+            delete this.handlers[event];
+          }
+        }
+        /**
+         * 触发事件
+         * @param {*} event 事件名字
+         * @param {*} args 执行参数
+         */
 
-// Page执行路径记录，方法和App的记录一样
-var originPage = Page,
-  pageHookMethods = ["onLoad", "onShow", "onReady", "onHide", "onUnload", "onPullDownRefresh", "onReachBottom", "onShareAppMessage"]
-Page = function (page) {
-  // 记录page生命周期函数
-  pageHookMethods.forEach(function (hookName) {
-    (page[hookName] || (hookName === 'onReady' || hookName === 'onLoad')) && recordPageFn(page, hookName)
-  })
-  // 记录用户自定义函数
-  xbossDebug.monitorMethodCall && Object.keys(page).forEach(function (fn) {
-    "function" != typeof page[fn] || pageHookMethods.includes(fn) || recordPageFn(page, fn)
-  })
-  // 执行原Page对象
-  originPage(page)
-}
+      }, {
+        key: "trigger",
+        value: function trigger(event, args) {
+          var _this2 = this;
+
+          var arg = args || [];
+          var funcs = this.handlers[event];
+          if (funcs) {
+            return funcs.every(function (f) {
+              var ret = f.apply(_this2, arg);
+              return ret === false ? false : true;
+            });
+          }
+          return true;
+        }
+      }]);
+      return _class;
+    }(supperclass);
+  };
+
+  var Report = function Report(supperclass) {
+    return function (_supperclass) {
+      inherits(_class, _supperclass);
+
+      function _class(options) {
+        classCallCheck(this, _class);
+
+        var _this = possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, options));
+
+        _this.errorQueue = []; // 记录错误队列
+        _this.repeatList = {}; // 记录重复异常数据
+        _this.url = _this.config.url;
+        ["log", "debug", "info", "warn", "error"].forEach(function (type, index) {
+          _this[type] = function (msg) {
+            return _this.handleMsg(msg, type, index);
+          };
+        });
+        return _this;
+      }
+      // 重复出现的错误，只上报config.repeat次
 
 
-module.exports = xbossDebug
+      createClass(_class, [{
+        key: "repeat",
+        value: function repeat(error) {
+          var rowNum = error.rowNum || "";
+          var colNum = error.colNum || "";
+          var repeatName = error.msg + rowNum + colNum;
+          this.repeatList[repeatName] = this.repeatList[repeatName] ? this.repeatList[repeatName] + 1 : 1;
+          return this.repeatList[repeatName] > this.config.repeat;
+        }
+        // 忽略错误
+
+      }, {
+        key: "except",
+        value: function except(error) {
+          var oExcept = this.config.except;
+          var result = false;
+          var v = null;
+          if (utils.typeDecide(oExcept, "Array")) {
+            for (var i = 0, len = oExcept.length; i < len; i++) {
+              v = oExcept[i];
+              if (utils.typeDecide(v, "RegExp") && v.test(error.msg) || utils.typeDecide(v, "Function") && v(error, error.msg)) {
+                result = true;
+                break;
+              }
+            }
+          }
+          return result;
+        }
+        // 请求服务端
+
+      }, {
+        key: "request",
+        value: function request(url, params, cb) {
+          if (!this.config.key) {
+            console.warn("please set key in xbossdebug.config.key");
+            return;
+          }
+          params.key = this.config.key;
+          wx.request({
+            url: url,
+            method: 'POST',
+            data: params,
+            success: cb
+          });
+        }
+      }, {
+        key: "report",
+        value: function report(cb) {
+          var _this2 = this;
+
+          var mergeReport = this.config.mergeReport;
+          if (this.errorQueue.length === 0) return this.url;
+          var curQueue = mergeReport ? this.errorQueue : [this.errorQueue.shift()];
+          if (mergeReport) this.errorQueue = [];
+          var url = this.url;
+          var params = { err_msg: curQueue, systemInfo: this.systemInfo, breadcrumbs: this.breadcrumbs, locationInfo: this.locationInfo };
+          this.request(url, params, function () {
+            if (cb) {
+              cb.call(_this2);
+            }
+            _this2.trigger("afterReport");
+          });
+          return url;
+        }
+        // 发送
+
+      }, {
+        key: "send",
+        value: function send(cb) {
+          var _this3 = this;
+
+          if (!this.trigger("beforeReport")) return;
+          var callback = cb || utils.noop;
+          var delay = this.config.mergeReport ? this.config.delay : 0;
+          setTimeout(function () {
+            _this3.report(callback);
+          }, delay);
+        }
+        // push错误到pool
+
+      }, {
+        key: "catchError",
+        value: function catchError(error) {
+          var rnd = Math.random();
+          if (rnd >= this.config.random) {
+            return false;
+          }
+          if (this.repeat(error)) {
+            return false;
+          }
+          if (this.except(error)) {
+            return false;
+          }
+          this.errorQueue.push(error);
+          return this.errorQueue;
+        }
+        // 手动上报
+
+      }, {
+        key: "handleMsg",
+        value: function handleMsg(msg, type, level) {
+          if (!msg) {
+            return false;
+          }
+          var errorMsg = utils.typeDecide(msg, "Object") ? msg : { msg: msg };
+          errorMsg.level = level;
+          errorMsg.type = type;
+          errorMsg = utils.assignObject({}, errorMsg);
+          if (this.catchError(errorMsg)) {
+            this.send();
+          }
+          return errorMsg;
+        }
+      }]);
+      return _class;
+    }(supperclass);
+  };
+
+  var XbossDebug = function (_events) {
+    inherits(XbossDebug, _events);
+
+    function XbossDebug(options) {
+      classCallCheck(this, XbossDebug);
+
+      var _this = possibleConstructorReturn(this, (XbossDebug.__proto__ || Object.getPrototypeOf(XbossDebug)).call(this, options));
+
+      _this.breadcrumbs = []; // 函数执行面包屑
+      _this.activePage = {};
+      _this.init();
+      return _this;
+    }
+
+    createClass(XbossDebug, [{
+      key: "init",
+      value: function init() {
+        this.getNetworkType();
+        this.getLocation();
+        this.getSystemInfo();
+        this.rewriteApp();
+        this.rewritePage();
+      }
+      // 劫持原小程序App方法
+
+    }, {
+      key: "rewriteApp",
+      value: function rewriteApp() {
+        var originApp = App,
+            self = this;
+        App = function App(app) {
+          // 合并方法，插入记录脚本
+          ['onLaunch', 'onShow', 'onHide', 'onError'].forEach(function (methodName) {
+            var userDefinedMethod = app[methodName]; // 暂存用户定义的方法
+            app[methodName] = function (options) {
+              var breadcrumb = {
+                type: "function",
+                time: utils.now(),
+                belong: "App", // 来源
+                method: methodName,
+                path: options && options.path, // 页面路径
+                query: options && options.query, // 页面参数
+                scene: options && options.scene // 场景编号
+              };
+              self.pushToBreadcrumb(breadcrumb); // 把执行对象加入到面包屑中
+              'onError' === methodName && self.error({ msg: options }); // 错误上报
+              userDefinedMethod && userDefinedMethod.call(this, options);
+            };
+          });
+          originApp(app);
+        };
+      }
+      // 劫持原小程序Page方法
+
+    }, {
+      key: "rewritePage",
+      value: function rewritePage() {
+        var _this2 = this;
+
+        var originPage = Page;
+        Page = function Page(page) {
+          Object.keys(page).forEach(function (methodName) {
+            "function" == typeof page[methodName] && _this2.recordPageFn(page, methodName);
+          });
+          // 强制记录两生命周期函数
+          page['onReady'] || _this2.recordPageFn(page, 'onReady');
+          page['onLoad'] || _this2.recordPageFn(page, 'onLoad');
+          // 执行原Page对象
+          originPage(page);
+        };
+      }
+
+      // 获取当前显示的页面
+
+    }, {
+      key: "getActivePage",
+      value: function getActivePage() {
+        var curPages = getCurrentPages();
+        if (curPages.length) return curPages[curPages.length - 1];
+      }
+      // 记录函数执行情况，最多记录20个
+
+    }, {
+      key: "pushToBreadcrumb",
+      value: function pushToBreadcrumb(obj) {
+        this.breadcrumbs.push(obj), this.breadcrumbs.length > 20 && this.breadcrumbs.shift();
+      }
+      // 记录Page执行信息
+
+    }, {
+      key: "recordPageFn",
+      value: function recordPageFn(page, methodName) {
+        var userDefinedMethod = page[methodName],
+            self = this;
+        page[methodName] = function () {
+          if ("onLoad" === methodName || "onShow" === methodName) self.activePage = self.getActivePage();
+          var breadcrumb = {
+            type: "function",
+            time: utils.now(),
+            belong: "Page",
+            method: methodName,
+            route: self.activePage && self.activePage.route,
+            options: self.activePage && self.activePage.options
+          };
+          "onLoad" === methodName && (breadcrumb.args = arguments);
+          self.methodFilter(methodName) && self.pushToBreadcrumb(breadcrumb);
+          userDefinedMethod && userDefinedMethod.apply(this, arguments);
+        };
+      }
+      // 过滤方法，可以在这里做黑白名单
+
+    }, {
+      key: "methodFilter",
+      value: function methodFilter(methodName) {
+        return "onPageScroll" !== methodName; // 把onPageScroll方法过滤掉
+      }
+    }, {
+      key: "getNetworkType",
+      value: function getNetworkType() {
+        var _this3 = this;
+
+        wx.getNetworkType({
+          success: function success(res) {
+            _this3.networkType = res.networkType;
+          }
+        });
+      }
+    }, {
+      key: "getSystemInfo",
+      value: function getSystemInfo() {
+        var _this4 = this;
+
+        wx.getSystemInfo({
+          success: function success(res) {
+            _this4.systemInfo = res;
+          }
+        });
+      }
+    }, {
+      key: "getLocation",
+      value: function getLocation() {
+        var _this5 = this;
+
+        wx.getLocation({
+          type: "wgs84",
+          success: function success(res) {
+            _this5.locationInfo = res;
+          }
+        });
+      }
+    }]);
+    return XbossDebug;
+  }(Events(Report(Config)));
+
+  var xbossdebug = new XbossDebug();
+
+  return xbossdebug;
+
+})));
