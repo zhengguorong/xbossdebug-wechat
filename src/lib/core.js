@@ -8,9 +8,6 @@ class XbossDebug extends events(report(config)) {
     super(options);
     this.breadcrumbs = []; // 函数执行面包屑
     this.activePage = {};
-    this.init();
-  }
-  init() {
     this.rewriteApp();
     this.rewritePage();
   }
