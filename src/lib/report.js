@@ -48,10 +48,10 @@ let Report = supperclass =>
         console.warn("please set key in xbossdebug.config.key");
         return;
       }
-      params.key = this.config.key
+      params.key = this.config.key;
       wx.request({
         url: url,
-        method: 'POST',
+        method: "POST",
         data: params,
         success: cb
       });
@@ -62,7 +62,13 @@ let Report = supperclass =>
       let curQueue = mergeReport ? this.errorQueue : [this.errorQueue.shift()];
       if (mergeReport) this.errorQueue = [];
       let url = this.url;
-      let params = {err_msg: curQueue, systemInfo: this.systemInfo, breadcrumbs: this.breadcrumbs, locationInfo: this.locationInfo}
+      let params = {
+        err_msg: curQueue,
+        systemInfo: this.systemInfo,
+        breadcrumbs: this.breadcrumbs,
+        locationInfo: this.locationInfo,
+        version: this.config.version
+      };
       this.request(url, params, () => {
         if (cb) {
           cb.call(this);

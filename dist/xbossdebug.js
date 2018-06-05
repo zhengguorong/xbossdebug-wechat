@@ -146,7 +146,7 @@
         key: "on",
         value: function on(event, handlers) {
           this.handlers[event] = this.handlers[event] || [];
-          this.handlers[event].push(handler);
+          this.handlers[event].push(handlers);
           return this.handlers[event];
         }
         /**
@@ -249,7 +249,7 @@
           params.key = this.config.key;
           wx.request({
             url: url,
-            method: 'POST',
+            method: "POST",
             data: params,
             success: cb
           });
@@ -264,7 +264,13 @@
           var curQueue = mergeReport ? this.errorQueue : [this.errorQueue.shift()];
           if (mergeReport) this.errorQueue = [];
           var url = this.url;
-          var params = { err_msg: curQueue, systemInfo: this.systemInfo, breadcrumbs: this.breadcrumbs, locationInfo: this.locationInfo };
+          var params = {
+            err_msg: curQueue,
+            systemInfo: this.systemInfo,
+            breadcrumbs: this.breadcrumbs,
+            locationInfo: this.locationInfo,
+            version: this.config.version
+          };
           this.request(url, params, function () {
             if (cb) {
               cb.call(_this2);
@@ -359,7 +365,7 @@
             self = this;
         App = function App(app) {
           // 合并方法，插入记录脚本
-          ['onLaunch', 'onShow', 'onHide', 'onError'].forEach(function (methodName) {
+          ["onLaunch", "onShow", "onHide", "onError"].forEach(function (methodName) {
             var userDefinedMethod = app[methodName]; // 暂存用户定义的方法
             app[methodName] = function (options) {
               var breadcrumb = {
@@ -372,7 +378,7 @@
                 scene: options && options.scene // 场景编号
               };
               self.pushToBreadcrumb(breadcrumb); // 把执行对象加入到面包屑中
-              'onError' === methodName && self.error({ msg: options }); // 错误上报
+              "onError" === methodName && self.error({ msg: options }); // 错误上报
               userDefinedMethod && userDefinedMethod.call(this, options);
             };
           });
@@ -392,8 +398,8 @@
             "function" == typeof page[methodName] && _this2.recordPageFn(page, methodName);
           });
           // 强制记录两生命周期函数
-          page['onReady'] || _this2.recordPageFn(page, 'onReady');
-          page['onLoad'] || _this2.recordPageFn(page, 'onLoad');
+          page["onReady"] || _this2.recordPageFn(page, "onReady");
+          page["onLoad"] || _this2.recordPageFn(page, "onLoad");
           // 执行原Page对象
           originPage(page);
         };
