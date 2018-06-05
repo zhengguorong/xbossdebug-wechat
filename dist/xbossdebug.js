@@ -346,19 +346,14 @@
 
       _this.breadcrumbs = []; // 函数执行面包屑
       _this.activePage = {};
-      _this.init();
+      _this.rewriteApp();
+      _this.rewritePage();
       return _this;
     }
+    // 劫持原小程序App方法
+
 
     createClass(XbossDebug, [{
-      key: "init",
-      value: function init() {
-        this.rewriteApp();
-        this.rewritePage();
-      }
-      // 劫持原小程序App方法
-
-    }, {
       key: "rewriteApp",
       value: function rewriteApp() {
         var originApp = App,
