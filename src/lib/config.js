@@ -4,6 +4,8 @@ class Config {
     constructor( options ) {
         this.config = {
             version: '1.0.0',
+            setSystemInfo: false,
+            setLocation: false,
             key: '',
             proxyAll: false,
             mergeReport: true, // mergeReport 是否合并上报， false 关闭， true 启动（默认）

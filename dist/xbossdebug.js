@@ -93,6 +93,8 @@
 
           this.config = {
               version: '1.0.0',
+              setSystemInfo: false,
+              setLocation: false,
               key: '',
               proxyAll: false,
               mergeReport: true, // mergeReport 是否合并上报， false 关闭， true 启动（默认）
@@ -269,6 +271,7 @@
             systemInfo: this.systemInfo,
             breadcrumbs: this.breadcrumbs,
             locationInfo: this.locationInfo,
+            networkType: this.networkType,
             version: this.config.version
           };
           this.request(url, params, function () {
@@ -350,9 +353,6 @@
     createClass(XbossDebug, [{
       key: "init",
       value: function init() {
-        this.getNetworkType();
-        this.getLocation();
-        this.getSystemInfo();
         this.rewriteApp();
         this.rewritePage();
       }
@@ -380,6 +380,11 @@
               self.pushToBreadcrumb(breadcrumb); // 把执行对象加入到面包屑中
               "onError" === methodName && self.error({ msg: options }); // 错误上报
               userDefinedMethod && userDefinedMethod.call(this, options);
+              if ('onLaunch' == methodName) {
+                self.getNetworkType();
+                self.config.setLocation && self.getLocation();
+                self.config.setSystemInfo && self.getSystemInfo();
+              }
             };
           });
           originApp(app);

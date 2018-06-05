@@ -67,6 +67,7 @@ let Report = supperclass =>
         systemInfo: this.systemInfo,
         breadcrumbs: this.breadcrumbs,
         locationInfo: this.locationInfo,
+        networkType: this.networkType,
         version: this.config.version
       };
       this.request(url, params, () => {

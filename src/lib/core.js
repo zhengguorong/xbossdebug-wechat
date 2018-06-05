@@ -11,9 +11,6 @@ class XbossDebug extends events(report(config)) {
     this.init();
   }
   init() {
-    this.getNetworkType();
-    this.getLocation();
-    this.getSystemInfo();
     this.rewriteApp();
     this.rewritePage();
   }
@@ -38,6 +35,11 @@ class XbossDebug extends events(report(config)) {
           self.pushToBreadcrumb(breadcrumb); // 把执行对象加入到面包屑中
           "onError" === methodName && self.error({ msg: options }); // 错误上报
           userDefinedMethod && userDefinedMethod.call(this, options);
+          if ('onLaunch' == methodName) {
+            self.getNetworkType();
+            self.config.setLocation && self.getLocation();
+            self.config.setSystemInfo && self.getSystemInfo();
+          }
         };
       });
       originApp(app);
