@@ -75,8 +75,10 @@ App = function(app) {
 可以从下面的json看出，用户到了detail页面，执行了onLoad => getDetail => onReady => buy 当执行buy方法的时候报错。
 
 ```json
-{"method":"onLoad","route":"pages/film/detail","options":{"id":"4206"}},
-{"method":"getDetail","route":"pages/film/detail","options":{"id":"4206"}},	{"method":"onReady","route":"pages/film/detail","options":{"id":"4206"}},{"method":"buy","route":"pages/film/detail","options":{"id":"4206"}}]
+[{"method":"onLoad","route":"pages/film/detail","options":{"id":"4206"}},
+{"method":"getDetail","route":"pages/film/detail","options":{"id":"4206"}},
+{"method":"onReady","route":"pages/film/detail","options":{"id":"4206"}},
+{"method":"buy","route":"pages/film/detail","options":{"id":"4206"}}]
 ```
 
 
