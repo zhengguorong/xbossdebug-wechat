@@ -12,9 +12,7 @@ console.log(result.data.msg) // 抛出错误
 
 2、记录用户操作路径，更方便重现错误
 
-![](/Users/zhengguorong/project/xbossdebug/xbossdebug-wechat/README.png)
-
-3、收集页面在不同手机下，渲染的速度，以便性能调优
+![](https://github.com/zhengguorong/xbossdebug-wechat/blob/master/README.png)
 
 
 
