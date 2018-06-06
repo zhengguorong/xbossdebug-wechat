@@ -96,14 +96,11 @@ App = function(app) {
 项目目录如下：
 
 ```
-src/
-	lib/
-		config.js  // 配置文件
-		core.js	 // 劫持小程序核心代码
-		events.js  // 监听自定义事件
-		report.js // 上报类
-		utils.js // 工具类
-	index.js // 主入口
+  config.js  // 配置文件
+  core.js	 // 劫持小程序核心代码
+  events.js  // 监听自定义事件
+  report.js // 上报类
+  utils.js // 工具类
 ```
 
 
