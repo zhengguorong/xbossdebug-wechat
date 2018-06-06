@@ -1,132 +1,119 @@
-小程序在App中提供onError函数，我们通过onError收集错误即可，但是如果只是简单的收集，不便于排查错误，所以我们通过方法注入的形式，监听应用执行函数的顺序。
+## 前言
 
-#### 1、简单监控
+你是否经常碰到业务反馈，线上的小程序某个页面打不开了，订单没法结算了，但是你当时测试的时候都是好好的。
 
-在App的onError中监听并上传错误
+由于线上环境复杂，一些问题只会在特定网络环境或者设备上发生，对于这类问题，异常信息的收集就显得格外重要了，我们不但希望收集**错误的堆栈信息，还需要用户操作流程，设备信息**等，以便复现错误。
+
+
+
+## 简单收集
+
+小程序App()生命周期里提供了onError函数，可以通过在onError里收集异常信息
+
 ```
 App({
   // 监听错误
   onError: function (err) {
-    console.log(err)
     // 上报错误
     wx.request({
       url: "https://url", // 自行定义报告服务器
       method: "POST",
-      data: params
+      errMsg: err
     })
-  },
-  // 触发错误
-  onLaunch: function () {
-    throw new Error('my error msg')
   }
 })
 ```
 
 
-#### 2、错误路径收集
-为了实现错误追踪，只收集错误栈是不够的，我们还希望收集错误产生的路径，从进入页面开始，执行了哪些方法，导致了错误
+
+## 用户操作路径收集
+
+一些较隐蔽的错误如果只有错误栈信息，排查起来会比较难，如果有用户操作的路径，在排查时就方便多了。
+
+**方法一：暴力打点方法收集**
+
+优点：简单直接
+
+缺点：污染业务代码，造成较多垃圾代码
+
+**方法二：函数劫持（推荐使用）**
+
+需要在App函数中的onLaunch、onShow、onHide生命周期插入监控代码，我们通过重写App生命周期函数来实现。
 
 ```
-// app.js代码
-var xbossdebug = require('libs/xbossdebug.js') // 把监控功能封装起来
-App({
-  baseUrl: 'https://m.maizuo.com/v4/api',
-  onError: function (err) {
-    xbossdebug.record('onErro function excute')
-  },
-  onLaunch: function () {
-    xbossdebug.record('onLaunch function excute')
-  },
-  onShow: function () {
-    xbossdebug.record('onShow function excute')
-  }
-})
-
-// libs/xbossdebug.js代码
-var fnExcutePath = []
-function record (msg) {
-  fnExcutePath.push(msg)
-}
-module.exports = {
-  record
-}
-```
-
-
-**抽取模版代码**
-简单收集，产生了大量模版代码，我们希望可以把模版代码移到统一到地方管理
-
-```
-// 保存App的上下文 
-var originApp = App
-// 为了插入自定义代码到App生命周期，重新定义App对象
 App = function(app) {
-  // 记录app.js里定义的执行内容
-  var originOnLaunch = app['onLaunch']
-  // 重新定义onLaunch方法
-  app['onLaunch'] = function () {
-    // 自定义代码
-    record('onLaunch excute')
-    // 调用原定义代码
-    originOnLaunch()
-  }
-  // 记录app.js里定义的执行内容
-  var originOnShow = app['onShow']
-  // 重新定义onLaunch方法
-  app['onShow'] = function () {
-    // 自定义代码
-    record('onShow excute')
-    // 调用原定义代码
-    originOnShow()
-  }
-
-  // 执行原App对象
-  originApp(app)
+    ["onLaunch", "onShow", "onHide"].forEach(methodName => {
+        app[methodName] = function(options) {
+          // 构造访问日志对象
+          var breadcrumb = {
+            type: "function",
+            time: utils.now(),
+            belong: "App", // 来源
+            method: methodName,
+            path: options && options.path, // 页面路径
+            query: options && options.query, // 页面参数
+            scene: options && options.scene // 场景编号
+          };
+          self.pushToBreadcrumb(breadcrumb); // 把执行对象加入到面包屑中
+    })
 }
+```
+
+但是这样写，会把用户自定义的内容给覆盖掉，所以我们还需要把用户定义的函数和监控代码合并。
+
+````
+ var originApp = App // 保存原对象
+ App = function(app) {
+ 	// .... 此处省略监控代码
+ 	// .... 此处省略监控代码
+ 	originApp(app) // 执行用户定义的方法
+ }
+````
+
+**记录结果**
+
+可以从下面的json看出，用户到了detail页面，执行了onLoad => getDetail => onReady => buy 当执行buy方法的时候报错。
+
+```json
+{"method":"onLoad","route":"pages/film/detail","options":{"id":"4206"}},
+{"method":"getDetail","route":"pages/film/detail","options":{"id":"4206"}},	{"method":"onReady","route":"pages/film/detail","options":{"id":"4206"}},{"method":"buy","route":"pages/film/detail","options":{"id":"4206"}}]
 ```
 
 
 
+## 上报策略
+
+考虑到在大型应用中，日志量比较大，我们采取**抽样，合并，过滤**三个方法减少日志的输出，代码实现可以参考lib/report.js
 
 
-**优化重复代码**
+
+## 代码组织
+
+项目使用rollup作为构建工作，实现ES6转ES5，模块加载功能。
+
+项目目录如下：
 
 ```
-// 合并执行函数
-function mergeMethod(app, key, method) {
-  var oldMethod = app[key]; // 暂存原方法定义
-  // 合并方法
-  app[key] = function (app) {
-    return method.call(this, app), oldMethod && oldMethod.call(this, app)
-  }
-}
-// 保存App的上下文 
-var originApp = App
-// 为了插入自定义代码到App生命周期，重新定义App对象
-App = function(app) {
-  mergeMethod(app, 'onLaunch', function () {
-    record('onLaunch Excute')
-  })
-  // 执行原App对象
-  originApp(app)
-}
-
-// Page执行路径记录，方法和App的记录一样
-var originPage = Page
-Page = function (page) {
-  mergeMethod(page, 'onShow', function () {
-    record('page onShow Excute')
-  })
-  // 执行原Page对象
-  originPage(page)
-}
-
-var fnExcutePath = []
-function record (msg) {
-  fnExcutePath.push(msg)
-  console.log(fnExcutePath)
-}
-module.exports = {
-  record
-}
+src/
+	lib/
+		config.js  // 配置文件
+		core.js	 // 劫持小程序核心代码
+		events.js  // 监听自定义事件
+		report.js // 上报类
+		utils.js // 工具类
+	index.js // 主入口
 ```
+
+
+
+## 🌟喜欢的点个star：
+
+https://github.com/zhengguorong/xbossdebug-wechat
+
+
+
+## 参考资料
+
+[fundebug](https://www.fundebug.com/) 
+
+[前端异常监控系统落地](https://zhuanlan.zhihu.com/p/26085642)

@@ -110,7 +110,6 @@ let Report = supperclass =>
       let errorMsg = utils.typeDecide(msg, "Object") ? msg : { msg: msg };
       errorMsg.level = level;
       errorMsg.type = type;
-      errorMsg = utils.assignObject({}, errorMsg);
       if (this.catchError(errorMsg)) {
         this.send();
       }
