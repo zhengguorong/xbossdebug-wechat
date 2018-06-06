@@ -1,10 +1,4 @@
-# xbossdebug  小程序bug监控工具
-
-### 声明
-
-**代码思想参考[fundebug](https://www.fundebug.com/)，如果大家觉得还不错，希望大家支持fundebug的saas服务。**
-
-
+# xbossdebug  小程序异常监控工具
 
 ### 应用场景
 
@@ -16,24 +10,27 @@ var result = {}
 console.log(result.data.msg) // 抛出错误
 ```
 
-2、记录错误执行堆栈，更方便重现错误
+2、记录用户操作路径，更方便重现错误
 
-
-
-![](./README.png)
+![](/Users/zhengguorong/project/xbossdebug/xbossdebug-wechat/README.png)
 
 3、收集页面在不同手机下，渲染的速度，以便性能调优
+
+
 
 ### 小程序使用
 
 ##### 1、引入资源
 
-在app.js中加入，记得放在App对象上面
+在app.js中加入dist目录下的xbossdebug.min.js，记得放在App对象上面
 
 ```
-var xbossdebug = require('xbossdebug.js') // 引用xbossdebug
-xbossdebug.apikey = 'maizuo' // apikey为自定义唯一值，用于后端记录时区分应用
-xbossdebug.url = 'https://domain.com/'; // 上报服务端地址
+var xbossdebug = require('xbossdebug.min.js') // 引用xbossdebug
+xbossdebug.config.key = 'maizuo' // key为自定义唯一值，用于后端记录时区分应用
+xbossdebug.config.url = 'https://domain.com/'; // 上报服务端地址
+// 可选参数
+xbossdebug.config.setSystemInfo = true; // 获取系统信息
+xbossdebug.config.setLocation = true; // 获取用户位置信息
 ```
 
 ##### 2、测试是否正常使用
@@ -41,7 +38,7 @@ xbossdebug.url = 'https://domain.com/'; // 上报服务端地址
 ```
 App({
   onLaunch: function () {
-    xbossdebug.notifyError('error')
+    xbossdebug.error('error')
   }
 })
 ```
@@ -51,28 +48,53 @@ App({
 ```
 // 发送的结构如下
 {
-    apikey: String // 应用唯一id
+    key: String // 应用唯一id
     breadcrumbs: Array // 函数执行面包线，方便用于错误重现
     error: String // 错误堆栈信息
-    releseStage: String // 当前执行环境
     systemInfo: Object // 用户系统信息
     notifierVersion: String // 插件版本
-    appVersion: String // 小程序版本
     locationInfo: Object // 用户位置信息
-    userInfo: Object // 用户信息
-    timing: Object // 页面加载耗时
 }
 ```
 
-##### 4、可选参数
+
+
+### 高级配置
+
+如果你的应用日志量较大，可以通过以下参数合并日志和随机抽样。
 
 ```
-xbossdebug.setSystemInfo = true; // 获取系统信息
-xbossdebug.setUserInfo = true; // 获取用户信息
-xbossdebug.setLocation = true; // 获取用户位置信息
-xbossdebug.monitorMethodCall = true; // 监听用户自定义方法（默认只监听生命周期函数）
-xbossdebug.methodWhitelist = ["foo", "bar"]; // 监听白名单 白名单和黑名单同时配置时，只应用白名单
-xbossdebug.methodBlacklist = ["foo", "bar"]; // 监听黑名单
+xbossdebug.config.random = 1 // 默认为1，表示100%上报，如果设置0.5，就会随机上报
+xbossdebug.config.repeat = 5 // 重复上报次数(对于同一个错误超过多少次不上报)
+xbossdebug.config.mergeReport = true, // mergeReport 是否合并上报， false 关闭， true 启动（默认）
+xbossdebug.config.except = [ /^Script error\.?/, /^Javascript error: Script error\.? on line 0/ ], // 忽略某个错误
+```
+
+
+
+
+
+### 二次开发
+
+##### 1**、安装依赖**
+
+```
+// 进入项目目录安装依赖
+npm install
+// 安装rollup，用于js编译打包
+npm install -g rollup
+```
+
+##### 2、开发模式 （监听代码变化，生成xbossdebug.js）
+
+```
+npm run watch
+```
+
+##### 3、编译（生成xbossdebug.min.js）
+
+```
+npm run build
 ```
 
 
@@ -83,14 +105,17 @@ xbossdebug.methodBlacklist = ["foo", "bar"]; // 监听黑名单
 
 ### TODO
 
-1. 重构统计代码
-2. 服务端记录数据
-3. 数据并可视化
-4. 资源加载监控
-5. 页面性能监控
-6. typescript版本
-7. 自动化测试
+1. 服务端记录数据
+2. 数据并可视化
+3. 资源加载监控
+4. 页面性能监控
+5. typescript版本
+6. 自动化测试
 
 
 
+### 参考资料
 
+**代码思想参考[fundebug](https://www.fundebug.com/)，如果大家觉得还不错，希望大家支持fundebug的saas服务。**
+
+**代码风格参考https://github.com/gomeplusFED/GER**

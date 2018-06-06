@@ -63,12 +63,12 @@ let Report = supperclass =>
       if (mergeReport) this.errorQueue = [];
       let url = this.url;
       let params = {
-        err_msg: curQueue,
+        error: curQueue,
         systemInfo: this.systemInfo,
         breadcrumbs: this.breadcrumbs,
         locationInfo: this.locationInfo,
         networkType: this.networkType,
-        version: this.config.version
+        notifierVersion: this.config.version
       };
       this.request(url, params, () => {
         if (cb) {
