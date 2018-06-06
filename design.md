@@ -106,11 +106,6 @@ src/
 
 
 
-## 🌟喜欢的点个star：
-
-https://github.com/zhengguorong/xbossdebug-wechat
-
-
 
 ## 参考资料
 
