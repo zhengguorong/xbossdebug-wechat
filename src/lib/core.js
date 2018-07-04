@@ -85,7 +85,7 @@ class XbossDebug extends events(report(config)) {
       };
       "onLoad" === methodName && (breadcrumb.args = arguments);
       self.methodFilter(methodName) && self.pushToBreadcrumb(breadcrumb);
-      userDefinedMethod && userDefinedMethod.apply(this, arguments);
+      return userDefinedMethod && userDefinedMethod.apply(this, arguments);
     };
   }
   // 过滤方法，可以在这里做黑白名单
