@@ -39,7 +39,7 @@ class XbossDebug extends events(report(config)) {
           }
         };
       });
-      originApp(app);
+      return originApp(app);
     };
   }
   // 劫持原小程序Page方法
@@ -54,7 +54,7 @@ class XbossDebug extends events(report(config)) {
       page["onReady"] || this.recordPageFn(page, "onReady");
       page["onLoad"] || this.recordPageFn(page, "onLoad");
       // 执行原Page对象
-      originPage(page);
+      return originPage(page);
     };
   }
 
