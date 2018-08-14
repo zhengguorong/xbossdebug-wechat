@@ -3,7 +3,6 @@
   typeof define === 'function' && define.amd ? define(factory) :
   (global.XbossDebug = factory());
 }(this, (function () {
-
   var utils = {
     typeDecide: function typeDecide(o, type) {
       return Object.prototype.toString.call(o) === "[object " + type + "]";
@@ -96,7 +95,6 @@
               setSystemInfo: false,
               setLocation: false,
               key: '',
-              proxyAll: false,
               mergeReport: true, // mergeReport 是否合并上报， false 关闭， true 启动（默认）
               delay: 1000, // 当 mergeReport 为 true 可用，延迟多少毫秒，合并缓冲区中的上报（默认）
               url: "http://debug.limesoftware.cn/read.gif", // 指定错误上报地址
@@ -267,12 +265,12 @@
           if (mergeReport) this.errorQueue = [];
           var url = this.url;
           var params = {
-            err_msg: curQueue,
+            error: curQueue,
             systemInfo: this.systemInfo,
             breadcrumbs: this.breadcrumbs,
             locationInfo: this.locationInfo,
             networkType: this.networkType,
-            version: this.config.version
+            notifierVersion: this.config.version
           };
           this.request(url, params, function () {
             if (cb) {
@@ -325,7 +323,6 @@
           var errorMsg = utils.typeDecide(msg, "Object") ? msg : { msg: msg };
           errorMsg.level = level;
           errorMsg.type = type;
-          errorMsg = utils.assignObject({}, errorMsg);
           if (this.catchError(errorMsg)) {
             this.send();
           }
@@ -362,6 +359,11 @@
           // 合并方法，插入记录脚本
           ["onLaunch", "onShow", "onHide", "onError"].forEach(function (methodName) {
             var userDefinedMethod = app[methodName]; // 暂存用户定义的方法
+            if ('onLaunch' == methodName) {
+              self.getNetworkType();
+              self.config.setLocation && self.getLocation();
+              self.config.setSystemInfo && self.getSystemInfo();
+            }
             app[methodName] = function (options) {
               var breadcrumb = {
                 type: "function",
@@ -374,15 +376,10 @@
               };
               self.pushToBreadcrumb(breadcrumb); // 把执行对象加入到面包屑中
               "onError" === methodName && self.error({ msg: options }); // 错误上报
-              userDefinedMethod && userDefinedMethod.call(this, options);
-              if ('onLaunch' == methodName) {
-                self.getNetworkType();
-                self.config.setLocation && self.getLocation();
-                self.config.setSystemInfo && self.getSystemInfo();
-              }
+              return userDefinedMethod && userDefinedMethod.call(this, options);
             };
           });
-          originApp(app);
+          return originApp(app);
         };
       }
       // 劫持原小程序Page方法
@@ -401,7 +398,7 @@
           page["onReady"] || _this2.recordPageFn(page, "onReady");
           page["onLoad"] || _this2.recordPageFn(page, "onLoad");
           // 执行原Page对象
-          originPage(page);
+          return originPage(page);
         };
       }
 
@@ -439,7 +436,7 @@
           };
           "onLoad" === methodName && (breadcrumb.args = arguments);
           self.methodFilter(methodName) && self.pushToBreadcrumb(breadcrumb);
-          userDefinedMethod && userDefinedMethod.apply(this, arguments);
+          return userDefinedMethod && userDefinedMethod.apply(this, arguments);
         };
       }
       // 过滤方法，可以在这里做黑白名单
