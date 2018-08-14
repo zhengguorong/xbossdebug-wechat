@@ -19,6 +19,11 @@ class XbossDebug extends events(report(config)) {
       // 合并方法，插入记录脚本
       ["onLaunch", "onShow", "onHide", "onError"].forEach(methodName => {
         var userDefinedMethod = app[methodName]; // 暂存用户定义的方法
+        if ('onLaunch' == methodName) {
+          self.getNetworkType();
+          self.config.setLocation && self.getLocation();
+          self.config.setSystemInfo && self.getSystemInfo();
+        }
         app[methodName] = function(options) {
           var breadcrumb = {
             type: "function",
@@ -31,12 +36,7 @@ class XbossDebug extends events(report(config)) {
           };
           self.pushToBreadcrumb(breadcrumb); // 把执行对象加入到面包屑中
           "onError" === methodName && self.error({ msg: options }); // 错误上报
-          userDefinedMethod && userDefinedMethod.call(this, options);
-          if ('onLaunch' == methodName) {
-            self.getNetworkType();
-            self.config.setLocation && self.getLocation();
-            self.config.setSystemInfo && self.getSystemInfo();
-          }
+          return userDefinedMethod && userDefinedMethod.call(this, options);
         };
       });
       return originApp(app);
