@@ -97,7 +97,7 @@
               key: '',
               mergeReport: true, // mergeReport 是否合并上报， false 关闭， true 启动（默认）
               delay: 1000, // 当 mergeReport 为 true 可用，延迟多少毫秒，合并缓冲区中的上报（默认）
-              url: "http://debug.limesoftware.cn/read.gif", // 指定错误上报地址
+              url: "", // 指定错误上报地址
               except: [/^Script error\.?/, /^Javascript error: Script error\.? on line 0/], // 忽略某个错误
               random: 1, // 抽样上报，1~0 之间数值，1为100%上报（默认 1）
               repeat: 5 // 重复上报次数(对于同一个错误超过多少次不上报)
@@ -198,7 +198,6 @@
 
         _this.errorQueue = []; // 记录错误队列
         _this.repeatList = {}; // 记录重复异常数据
-        _this.url = _this.config.url;
         ["log", "debug", "info", "warn", "error"].forEach(function (type, index) {
           _this[type] = function (msg) {
             return _this.handleMsg(msg, type, index);
@@ -260,10 +259,10 @@
           var _this2 = this;
 
           var mergeReport = this.config.mergeReport;
-          if (this.errorQueue.length === 0) return this.url;
+          if (this.errorQueue.length === 0) return this.config.url;
           var curQueue = mergeReport ? this.errorQueue : [this.errorQueue.shift()];
           if (mergeReport) this.errorQueue = [];
-          var url = this.url;
+          var url = this.config.url;
           var params = {
             error: curQueue,
             systemInfo: this.systemInfo,

@@ -1,14 +1,14 @@
 {
   "name": "xbossdebug-wechat",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "### 声明",
   "main": "dist/xbossdebug.min.js",
   "scripts": {
     "pretest": "jshint -c .jshintrc src",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js",
-    "build": " rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.min.js,uglify",
-    "watch": "rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js -w"
+    "dev": "node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js",
+    "build": " node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.min.js,uglify",
+    "watch": "node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js -w"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,8 @@
     "babel-preset-es2015-rollup": "^3.0.0",
     "babel-preset-latest": "^6.24.1",
     "rollup-plugin-babel": "^3.0.4",
-    "rollup-plugin-uglify": "^3.0.0"
-  }
+    "rollup-plugin-uglify": "^3.0.0",
+    "rollup": "^0.65.2"
+  },
+  "dependencies": {}
 }

@@ -6,7 +6,6 @@ let Report = supperclass =>
       super(options);
       this.errorQueue = []; // 记录错误队列
       this.repeatList = {}; // 记录重复异常数据
-      this.url = this.config.url;
       ["log", "debug", "info", "warn", "error"].forEach((type, index) => {
         this[type] = msg => {
           return this.handleMsg(msg, type, index);
@@ -58,10 +57,10 @@ let Report = supperclass =>
     }
     report(cb) {
       let mergeReport = this.config.mergeReport;
-      if (this.errorQueue.length === 0) return this.url;
+      if (this.errorQueue.length === 0) return this.config.url;
       let curQueue = mergeReport ? this.errorQueue : [this.errorQueue.shift()];
       if (mergeReport) this.errorQueue = [];
-      let url = this.url;
+      let url = this.config.url;
       let params = {
         error: curQueue,
         systemInfo: this.systemInfo,
