@@ -1,7 +1,7 @@
 {
   "env": {
     "test": {
-      "presets": ["env"]
+      "presets": ["latest"]
     },
     "build": {
       "presets": [
@@ -9,14 +9,12 @@
           "latest",
           {
             "es2015": {
-              "modules": false 
+              "modules": false
             }
           }
         ]
       ],
-      "plugins": [
-        "external-helpers"
-      ]
+      "plugins": ["external-helpers"]
     }
   }
 }

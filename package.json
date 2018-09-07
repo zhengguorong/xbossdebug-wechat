@@ -14,10 +14,7 @@
     "verbose": true,
     "collectCoverage": true,
     "testEnvironment": "node",
-    "automock": false,
-    "transform": {
-      "^.+\\.js?$": "babel-jest"
-    }
+    "automock": false
   },
   "repository": {
     "type": "git",
