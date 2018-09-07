@@ -5,21 +5,21 @@
 }(this, (function () {
   var utils = {
     typeDecide: function typeDecide(o, type) {
-      return Object.prototype.toString.call(o) === "[object " + type + "]";
+      return Object.prototype.toString.call(o) === '[object ' + type + ']';
     },
     isFunction: function isFunction(f) {
-      return utils.typeDecide(f, "Function");
+      return utils.typeDecide(f, 'Function');
     },
     isString: function isString(f) {
-      return utils.typeDecide(f, "String");
+      return utils.typeDecide(f, 'String');
     },
     serializeObj: function serializeObj(obj) {
-      var parames = "";
+      var parames = '';
       Object.keys(obj).forEach(function (name) {
-        if (utils.typeDecide(obj[name], "Object")) {
-          parames += name + "=" + utils.stringify(obj[name]);
+        if (utils.typeDecide(obj[name], 'Object')) {
+          parames += name + '=' + utils.stringify(obj[name]);
         } else {
-          parames += name + "=" + obj[name] + "^";
+          parames += name + '=' + obj[name] + '^';
         }
       });
       return encodeURIComponent(parames.substr(0, parames.length - 1));
@@ -87,37 +87,37 @@
   };
 
   var Config = function () {
-      function Config(options) {
-          classCallCheck(this, Config);
+    function Config(options) {
+      classCallCheck(this, Config);
 
-          this.config = {
-              version: '1.0.0',
-              setSystemInfo: false,
-              setLocation: false,
-              key: '',
-              mergeReport: true, // mergeReport 是否合并上报， false 关闭， true 启动（默认）
-              delay: 1000, // 当 mergeReport 为 true 可用，延迟多少毫秒，合并缓冲区中的上报（默认）
-              url: "", // 指定错误上报地址
-              except: [/^Script error\.?/, /^Javascript error: Script error\.? on line 0/], // 忽略某个错误
-              random: 1, // 抽样上报，1~0 之间数值，1为100%上报（默认 1）
-              repeat: 5 // 重复上报次数(对于同一个错误超过多少次不上报)
-          };
-          this.config = utils.assignObject(this.config, options);
+      this.config = {
+        version: '1.0.0',
+        setSystemInfo: false,
+        setLocation: false,
+        key: '',
+        mergeReport: true, // mergeReport 是否合并上报， false 关闭， true 启动（默认）
+        delay: 1000, // 当 mergeReport 为 true 可用，延迟多少毫秒，合并缓冲区中的上报（默认）
+        url: '', // 指定错误上报地址
+        except: [/^Script error\.?/, /^Javascript error: Script error\.? on line 0/], // 忽略某个错误
+        random: 1, // 抽样上报，1~0 之间数值，1为100%上报（默认 1）
+        repeat: 5 // 重复上报次数(对于同一个错误超过多少次不上报)
+      };
+      this.config = utils.assignObject(this.config, options);
+    }
+
+    createClass(Config, [{
+      key: 'get',
+      value: function get$$1(name) {
+        return this.config[name];
       }
-
-      createClass(Config, [{
-          key: 'get',
-          value: function get$$1(name) {
-              return this.config[name];
-          }
-      }, {
-          key: 'set',
-          value: function set$$1(name, value) {
-              this.config[name] = value;
-              return this.config[name];
-          }
-      }]);
-      return Config;
+    }, {
+      key: 'set',
+      value: function set$$1(name, value) {
+        this.config[name] = value;
+        return this.config[name];
+      }
+    }]);
+    return Config;
   }();
 
   /**
@@ -135,6 +135,7 @@
         _this.handlers = {};
         return _this;
       }
+
       /**
        * 事件注册
        * @param {*} event 事件名字
@@ -149,6 +150,7 @@
           this.handlers[event].push(handlers);
           return this.handlers[event];
         }
+
         /**
          * 事件注销
          * @param {*} event 事件名字
@@ -161,6 +163,7 @@
             delete this.handlers[event];
           }
         }
+
         /**
          * 触发事件
          * @param {*} event 事件名字
@@ -177,7 +180,7 @@
           if (funcs) {
             return funcs.every(function (f) {
               var ret = f.apply(_this2, arg);
-              return ret === false ? false : true;
+              return ret !== false;
             });
           }
           return true;
@@ -198,37 +201,39 @@
 
         _this.errorQueue = []; // 记录错误队列
         _this.repeatList = {}; // 记录重复异常数据
-        ["log", "debug", "info", "warn", "error"].forEach(function (type, index) {
+        ['log', 'debug', 'info', 'warn', 'error'].forEach(function (type, index) {
           _this[type] = function (msg) {
             return _this.handleMsg(msg, type, index);
           };
         });
         return _this;
       }
+
       // 重复出现的错误，只上报config.repeat次
 
 
       createClass(_class, [{
-        key: "repeat",
+        key: 'repeat',
         value: function repeat(error) {
-          var rowNum = error.rowNum || "";
-          var colNum = error.colNum || "";
+          var rowNum = error.rowNum || '';
+          var colNum = error.colNum || '';
           var repeatName = error.msg + rowNum + colNum;
           this.repeatList[repeatName] = this.repeatList[repeatName] ? this.repeatList[repeatName] + 1 : 1;
           return this.repeatList[repeatName] > this.config.repeat;
         }
+
         // 忽略错误
 
       }, {
-        key: "except",
+        key: 'except',
         value: function except(error) {
           var oExcept = this.config.except;
           var result = false;
           var v = null;
-          if (utils.typeDecide(oExcept, "Array")) {
+          if (utils.typeDecide(oExcept, 'Array')) {
             for (var i = 0, len = oExcept.length; i < len; i++) {
               v = oExcept[i];
-              if (utils.typeDecide(v, "RegExp") && v.test(error.msg) || utils.typeDecide(v, "Function") && v(error, error.msg)) {
+              if (utils.typeDecide(v, 'RegExp') && v.test(error.msg) || utils.typeDecide(v, 'Function') && v(error, error.msg)) {
                 result = true;
                 break;
               }
@@ -236,33 +241,35 @@
           }
           return result;
         }
+
         // 请求服务端
 
       }, {
-        key: "request",
+        key: 'request',
         value: function request(url, params, cb) {
           if (!this.config.key) {
-            console.warn("please set key in xbossdebug.config.key");
-            return;
+            throw new Error('please set key in xbossdebug.config.key');
           }
           params.key = this.config.key;
           wx.request({
             url: url,
-            method: "POST",
+            method: 'POST',
             data: params,
             success: cb
           });
         }
       }, {
-        key: "report",
+        key: 'report',
         value: function report(cb) {
           var _this2 = this;
 
           var mergeReport = this.config.mergeReport;
+
           if (this.errorQueue.length === 0) return this.config.url;
           var curQueue = mergeReport ? this.errorQueue : [this.errorQueue.shift()];
           if (mergeReport) this.errorQueue = [];
           var url = this.config.url;
+
           var params = {
             error: curQueue,
             systemInfo: this.systemInfo,
@@ -275,28 +282,30 @@
             if (cb) {
               cb.call(_this2);
             }
-            _this2.trigger("afterReport");
+            _this2.trigger('afterReport');
           });
           return url;
         }
+
         // 发送
 
       }, {
-        key: "send",
+        key: 'send',
         value: function send(cb) {
           var _this3 = this;
 
-          if (!this.trigger("beforeReport")) return;
+          if (!this.trigger('beforeReport')) return;
           var callback = cb || utils.noop;
           var delay = this.config.mergeReport ? this.config.delay : 0;
           setTimeout(function () {
             _this3.report(callback);
           }, delay);
         }
+
         // push错误到pool
 
       }, {
-        key: "catchError",
+        key: 'catchError',
         value: function catchError(error) {
           var rnd = Math.random();
           if (rnd >= this.config.random) {
@@ -311,15 +320,16 @@
           this.errorQueue.push(error);
           return this.errorQueue;
         }
+
         // 手动上报
 
       }, {
-        key: "handleMsg",
+        key: 'handleMsg',
         value: function handleMsg(msg, type, level) {
           if (!msg) {
             return false;
           }
-          var errorMsg = utils.typeDecide(msg, "Object") ? msg : { msg: msg };
+          var errorMsg = utils.typeDecide(msg, 'Object') ? msg : { msg: msg };
           errorMsg.level = level;
           errorMsg.type = type;
           if (this.catchError(errorMsg)) {
@@ -346,56 +356,59 @@
       _this.rewritePage();
       return _this;
     }
+
     // 劫持原小程序App方法
 
 
     createClass(XbossDebug, [{
-      key: "rewriteApp",
+      key: 'rewriteApp',
       value: function rewriteApp() {
-        var originApp = App,
-            self = this;
+        var originApp = App;
+
+        var self = this;
         App = function App(app) {
           // 合并方法，插入记录脚本
-          ["onLaunch", "onShow", "onHide", "onError"].forEach(function (methodName) {
+          ['onLaunch', 'onShow', 'onHide', 'onError'].forEach(function (methodName) {
             var userDefinedMethod = app[methodName]; // 暂存用户定义的方法
-            if ('onLaunch' == methodName) {
+            if (methodName === 'onLaunch') {
               self.getNetworkType();
               self.config.setLocation && self.getLocation();
               self.config.setSystemInfo && self.getSystemInfo();
             }
             app[methodName] = function (options) {
               var breadcrumb = {
-                type: "function",
+                type: 'function',
                 time: utils.now(),
-                belong: "App", // 来源
+                belong: 'App', // 来源
                 method: methodName,
                 path: options && options.path, // 页面路径
                 query: options && options.query, // 页面参数
                 scene: options && options.scene // 场景编号
               };
               self.pushToBreadcrumb(breadcrumb); // 把执行对象加入到面包屑中
-              "onError" === methodName && self.error({ msg: options }); // 错误上报
+              methodName === 'onError' && self.error({ msg: options }); // 错误上报
               return userDefinedMethod && userDefinedMethod.call(this, options);
             };
           });
           return originApp(app);
         };
       }
+
       // 劫持原小程序Page方法
 
     }, {
-      key: "rewritePage",
+      key: 'rewritePage',
       value: function rewritePage() {
         var _this2 = this;
 
         var originPage = Page;
         Page = function Page(page) {
           Object.keys(page).forEach(function (methodName) {
-            "function" == typeof page[methodName] && _this2.recordPageFn(page, methodName);
+            typeof page[methodName] === 'function' && _this2.recordPageFn(page, methodName);
           });
           // 强制记录两生命周期函数
-          page["onReady"] || _this2.recordPageFn(page, "onReady");
-          page["onLoad"] || _this2.recordPageFn(page, "onLoad");
+          page.onReady || _this2.recordPageFn(page, 'onReady');
+          page.onLoad || _this2.recordPageFn(page, 'onLoad');
           // 执行原Page对象
           return originPage(page);
         };
@@ -404,49 +417,59 @@
       // 获取当前显示的页面
 
     }, {
-      key: "getActivePage",
+      key: 'getActivePage',
       value: function getActivePage() {
         var curPages = getCurrentPages();
-        if (curPages.length) return curPages[curPages.length - 1];
+        if (curPages.length) {
+          return curPages[curPages.length - 1];
+        }
+        return {};
       }
+
       // 记录函数执行情况，最多记录20个
 
     }, {
-      key: "pushToBreadcrumb",
+      key: 'pushToBreadcrumb',
       value: function pushToBreadcrumb(obj) {
-        this.breadcrumbs.push(obj), this.breadcrumbs.length > 20 && this.breadcrumbs.shift();
+        this.breadcrumbs.push(obj);
+        this.breadcrumbs.length > 20 && this.breadcrumbs.shift();
       }
+
       // 记录Page执行信息
 
     }, {
-      key: "recordPageFn",
+      key: 'recordPageFn',
       value: function recordPageFn(page, methodName) {
-        var userDefinedMethod = page[methodName],
-            self = this;
+        var userDefinedMethod = page[methodName];
+
+        var self = this;
         page[methodName] = function () {
-          if ("onLoad" === methodName || "onShow" === methodName) self.activePage = self.getActivePage();
+          if (methodName === 'onLoad' || methodName === 'onShow') {
+            self.activePage = self.getActivePage();
+          }
           var breadcrumb = {
-            type: "function",
+            type: 'function',
             time: utils.now(),
-            belong: "Page",
+            belong: 'Page',
             method: methodName,
             route: self.activePage && self.activePage.route,
             options: self.activePage && self.activePage.options
           };
-          "onLoad" === methodName && (breadcrumb.args = arguments);
+          methodName === 'onLoad' && (breadcrumb.args = arguments);
           self.methodFilter(methodName) && self.pushToBreadcrumb(breadcrumb);
           return userDefinedMethod && userDefinedMethod.apply(this, arguments);
         };
       }
+
       // 过滤方法，可以在这里做黑白名单
 
     }, {
-      key: "methodFilter",
+      key: 'methodFilter',
       value: function methodFilter(methodName) {
-        return "onPageScroll" !== methodName; // 把onPageScroll方法过滤掉
+        return methodName !== 'onPageScroll'; // 把onPageScroll方法过滤掉
       }
     }, {
-      key: "getNetworkType",
+      key: 'getNetworkType',
       value: function getNetworkType() {
         var _this3 = this;
 
@@ -457,7 +480,7 @@
         });
       }
     }, {
-      key: "getSystemInfo",
+      key: 'getSystemInfo',
       value: function getSystemInfo() {
         var _this4 = this;
 
@@ -468,12 +491,12 @@
         });
       }
     }, {
-      key: "getLocation",
+      key: 'getLocation',
       value: function getLocation() {
         var _this5 = this;
 
         wx.getLocation({
-          type: "wgs84",
+          type: 'wgs84',
           success: function success(res) {
             _this5.locationInfo = res;
           }
