@@ -1,7 +1,4 @@
-[![build status][travis-image]][travis-url]
-
-[travis-image]: https://img.shields.io/travis/eggjs/egg.svg?style=flat-square
-[travis-url]: https://travis-ci.org/zhengguorong/xbossdebug-wechat.svg?branch=master
+[![Build Status](https://travis-ci.org/zhengguorong/xbossdebug-wechat.svg?branch=master)](https://travis-ci.org/zhengguorong/xbossdebug-wechat)
 
 # xbossdebug  小程序异常监控工具
 
