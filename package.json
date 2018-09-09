@@ -6,15 +6,17 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
     "test": "BABEL_ENV=test jest",
+    "codecov": "node_modules/codecov/bin/codecov",
     "dev": "BABEL_ENV=build node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js",
     "build": " BABEL_ENV=build node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.min.js,uglify",
     "watch": "BABEL_ENV=build node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js -w"
   },
   "jest": {
     "verbose": true,
-    "collectCoverage": true,
     "testEnvironment": "node",
-    "automock": false
+    "automock": false,
+    "collectCoverage": true,
+    "coverageDirectory": "./coverage/"
   },
   "repository": {
     "type": "git",
@@ -34,6 +36,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-es2015-rollup": "^3.0.0",
     "babel-preset-latest": "^6.24.1",
+    "codecov": "^3.1.0",
     "eslint": "^5.4.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
