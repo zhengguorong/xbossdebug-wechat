@@ -12,7 +12,7 @@ const utils = {
     let parames = '';
     Object.keys(obj).forEach((name) => {
       if (utils.typeDecide(obj[name], 'Object')) {
-        parames += `${name}=${utils.stringify(obj[name])}`;
+        parames += `${name}=${JSON.stringify(obj[name])}`;
       } else {
         parames += `${name}=${obj[name]}^`;
       }

@@ -1,10 +1,13 @@
 import utils from './utils';
+import config from './config';
+import Events from './events';
 
-const Report = supperclass => class extends supperclass {
+class Report extends Events {
     constructor(options) {
       super(options);
       this.errorQueue = []; // 记录错误队列
       this.repeatList = {}; // 记录重复异常数据
+      this.config = config;
       ['log', 'debug', 'info', 'warn', 'error'].forEach((type, index) => {
         this[type] = msg => this.handleMsg(msg, type, index);
       });
@@ -117,6 +120,6 @@ const Report = supperclass => class extends supperclass {
       }
       return errorMsg;
     }
-  };
+  }
 
 export default Report;

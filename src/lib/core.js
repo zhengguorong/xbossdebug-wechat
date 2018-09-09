@@ -1,9 +1,7 @@
-import config from './config';
-import events from './events';
-import report from './report';
 import utils from './utils';
+import Report from './report';
 
-class XbossDebug extends events(report(config)) {
+class XbossDebug extends Report {
   constructor(options) {
     super(options);
     this.breadcrumbs = []; // 函数执行面包屑
