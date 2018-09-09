@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/zhengguorong/xbossdebug-wechat.svg?branch=master)](https://travis-ci.org/zhengguorong/xbossdebug-wechat)
+[![codecov](https://codecov.io/gh/zhengguorong/xbossdebug-wechat/branch/master/graph/badge.svg)](https://codecov.io/gh/zhengguorong/xbossdebug-wechat)
 
 # xbossdebug  小程序异常监控工具
 
