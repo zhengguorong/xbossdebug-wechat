@@ -5,7 +5,7 @@
   "main": "dist/xbossdebug.min.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
-    "test": "BABEL_ENV=test node_modules/rollup/bin/jest",
+    "test": "BABEL_ENV=test ./node_modules/rollup/bin/jest",
     "dev": "BABEL_ENV=build node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js",
     "build": " BABEL_ENV=build node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.min.js,uglify",
     "watch": "BABEL_ENV=build node_modules/rollup/bin/rollup --config rollup.config.js --environment entry:src/index.js,dest:dist/xbossdebug.js -w"

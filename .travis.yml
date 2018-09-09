@@ -4,4 +4,5 @@ node_js:
 install:
   - npm i npminstall && npminstall
 script:
+  - npm run lint
   - npm run test
