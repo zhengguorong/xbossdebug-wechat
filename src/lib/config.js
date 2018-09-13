@@ -29,5 +29,4 @@ class Config {
     return this.config[name];
   }
 }
-
 export default Config;

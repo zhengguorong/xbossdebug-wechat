@@ -1,5 +1,5 @@
 import utils from './utils';
-import config from './config';
+import Config from './config';
 import Events from './events';
 
 class Report extends Events {
@@ -7,7 +7,7 @@ class Report extends Events {
       super(options);
       this.errorQueue = []; // 记录错误队列
       this.repeatList = {}; // 记录重复异常数据
-      this.config = config;
+      this.config = new Config().config;
       ['log', 'debug', 'info', 'warn', 'error'].forEach((type, index) => {
         this[type] = msg => this.handleMsg(msg, type, index);
       });
