@@ -16,6 +16,11 @@ describe('report', () => {
     expect(report).toHaveProperty('warn');
     expect(report).toHaveProperty('error');
   });
+  it('should call handleMsg when call log', () => {
+    jest.spyOn(report, 'handleMsg');
+    report.log('error');
+    expect(report.handleMsg).toBeCalled();
+  });
   describe('repeat method', () => {
     const error = new Error('test');
     it('should return false when not over config.repeat count', () => {
@@ -29,10 +34,16 @@ describe('report', () => {
   });
 
   describe('except method', () => {
-    it('should return false when error not in config.execpt', () => {
+    it('should return false when config.except is not array', () => {
+      const { except } = report.config;
+      report.config.except = 'test';
+      expect(report.except({ msg: 'test' })).toBeFalsy();
+      report.config.except = except;
+    });
+    it('should return false when error not in config.except', () => {
       expect(report.except({ msg: 'test' })).toBeFalsy();
     });
-    it('should return true when error defined in config.expect', () => {
+    it('should return true when error defined in config.except', () => {
       expect(report.except({ msg: 'Script error' })).toBeTruthy();
     });
   });
@@ -58,6 +69,14 @@ describe('report', () => {
   describe('report method', () => {
     it('should return config.url when errorQueue.length equal 0', () => {
       expect(report.report()).toBe(report.config.url);
+    });
+    it('should send first errorQueue element when mergeReport is false ', () => {
+      jest.spyOn(report, 'request');
+      report.config.mergeReport = false;
+      report.errorQueue = ['ele1', 'ele2'];
+      report.report();
+      expect(report.request.mock.calls[0][1].error).toEqual(['ele1']);
+      report.config.mergeReport = true;
     });
     it('should callback when request', () => {
       report.errorQueue = ['mockError'];
@@ -109,9 +128,45 @@ describe('report', () => {
   });
   describe('catchError method', () => {
     it('should push erro to errorQueue', () => {
-      const result = report.catchError({ msg: 'test' });
-      console.log(result, 'result');
+      report.catchError({ msg: 'test' });
       expect(report.errorQueue.length).toEqual(1);
+      report.errorQueue = [];
+    });
+    it('should return false when random 0', () => {
+      report.config.random = 0;
+      const result = report.catchError({ msg: 'test' });
+      expect(result).toBeFalsy();
+      report.config.random = 1;
+    });
+    it('should return false when repeat', () => {
+      jest.spyOn(report, 'repeat');
+      report.repeat.mockImplementationOnce(() => true);
+      const result = report.catchError({ msg: 'test' });
+      expect(result).toBeFalsy();
+    });
+    it('should return false when except', () => {
+      jest.spyOn(report, 'except');
+      report.repeat.mockImplementationOnce(() => false);
+      report.except.mockImplementationOnce(() => true);
+      const result = report.catchError({ msg: 'test' });
+      expect(result).toBeFalsy();
+    });
+  });
+  describe('handleMsg', () => {
+    it('should return false when msg is undefined', () => {
+      const result = report.handleMsg();
+      expect(result).toBeFalsy();
+    });
+    it('should send object msg', () => {
+      const reuslt = report.handleMsg({ msg: 'test' }, 'error', 1);
+      expect(reuslt.msg).toEqual('test');
+    });
+    it('should send string msg', () => {
+      jest.spyOn(report, 'catchError');
+      jest.spyOn(report, 'send');
+      report.catchError.mockImplementationOnce(() => true);
+      report.handleMsg('test', 'error', 1);
+      expect(report.send).toBeCalled();
     });
   });
 });

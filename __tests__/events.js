@@ -13,6 +13,9 @@ describe('Event class', () => {
     event.off('test');
     expect(event.handlers.test).toBeUndefined;
   });
+  it('should return when not found', () => {
+    expect(event.off('test1')).toBeUndefined;
+  });
   it('should trigger event', () => {
     const cb = jest.fn();
     event.on('test', cb);

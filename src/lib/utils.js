@@ -19,14 +19,6 @@ const utils = {
     });
     return encodeURIComponent(parames.substr(0, parames.length - 1));
   },
-  assignObject(obj1, obj2) {
-    for (const name in obj2) {
-      if (obj2.hasOwnProperty(name)) {
-        obj1[name] = obj2[name];
-      }
-    }
-    return obj1;
-  },
   noop() {},
   now() {
     return new Date().getTime();

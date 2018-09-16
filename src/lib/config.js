@@ -1,5 +1,3 @@
-import utils from './utils';
-
 class Config {
   constructor(options) {
     this.config = {
@@ -17,7 +15,7 @@ class Config {
       random: 1, // 抽样上报，1~0 之间数值，1为100%上报（默认 1）
       repeat: 5, // 重复上报次数(对于同一个错误超过多少次不上报)
     };
-    this.config = utils.assignObject(this.config, options);
+    this.config = Object.assign(this.config, options);
   }
 
   get(name) {

@@ -19,18 +19,6 @@ describe('utils', () => {
     const result = utils.serializeObj({ test: { subTest: 'abc' } });
     expect(result).toBe('test%3D%7B%22subTest%22%3A%22abc%22');
   });
-  it('should assign when set diff key obj to assignObject', () => {
-    const testA = { testA: 'abc' };
-    const testB = { testB: '123' };
-    const targetObject = { testA: 'abc', testB: '123' };
-    expect(utils.assignObject(testA, testB)).toEqual(targetObject);
-  });
-  it('should cover when set the same key obj to assignObject', () => {
-    const testA = { testA: 'abc' };
-    const testB = { testA: '123' };
-    const targetObject = { testA: '123' };
-    expect(utils.assignObject(testA, testB)).toEqual(targetObject);
-  });
   it('should return empty fn', () => {
     expect(utils.noop).toBeInstanceOf(Function);
   });
