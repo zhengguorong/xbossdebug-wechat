@@ -1,9 +1,5 @@
 import Report from '../src/lib/report';
 
-global.wx = {
-  request: jest.fn(),
-};
-
 const report = new Report();
 report.config.key = 'test';
 report.trigger = jest.fn();
