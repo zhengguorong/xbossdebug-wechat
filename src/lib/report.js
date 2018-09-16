@@ -32,10 +32,7 @@ class Report extends Events {
       if (utils.typeDecide(oExcept, 'Array')) {
         for (let i = 0, len = oExcept.length; i < len; i++) {
           v = oExcept[i];
-          if (
-            (utils.typeDecide(v, 'RegExp') && v.test(error.msg))
-            || (utils.typeDecide(v, 'Function') && v(error, error.msg))
-          ) {
+          if ((utils.typeDecide(v, 'RegExp') && v.test(error.msg))) {
             result = true;
             break;
           }

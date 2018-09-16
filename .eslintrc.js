@@ -10,7 +10,11 @@ module.exports = {
     describe: true,
     it: true,
     expect: true,
-    jest: true
+    jest: true,
+    beforeEach: true,
+    beforeAll: true,
+    afterEach: true,
+    afterAll: true
   },
   rules: {
     "indent": [0, 2], // 4个空格作为代码缩进
