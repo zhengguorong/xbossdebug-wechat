@@ -1,3 +1,8 @@
+addons:
+  sonarcloud:
+    organization: "zhengguorong-github" # the key of the org you chose at step #3
+    token:
+      secure: 9785888673923c2fa351fb7e92da6d406ed2c962 # encrypted value of your token
 language: node_js
 node_js:
   - '8'
@@ -9,11 +14,4 @@ script:
   - npm run dev
   - npm run build
   - npm run codecov
-addons:
-  sonarcloud:
-    organization: "zhengguorong-github" # the key of the org you chose at step #3
-    token:
-      secure: 9785888673923c2fa351fb7e92da6d406ed2c962 # encrypted value of your token
-script:
-  # other script steps might be done before running the actual analysis
   - sonar-scanner
