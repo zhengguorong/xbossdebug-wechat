@@ -12,7 +12,10 @@ class Report extends Events {
         this[type] = msg => this.handleMsg(msg, type, index);
       });
     }
-
+    // options 动态设置
+    setOptions(options){
+      Object.assign(this.config, options)
+    }
     // 重复出现的错误，只上报config.repeat次
     repeat(error) {
       const rowNum = error.rowNum || '';
@@ -112,6 +115,7 @@ class Report extends Events {
       const errorMsg = utils.typeDecide(msg, 'Object') ? msg : { msg };
       errorMsg.level = level;
       errorMsg.type = type;
+      errorMsg.time = Data.now();
       if (this.catchError(errorMsg)) {
         this.send();
       }
