@@ -17,6 +17,14 @@ describe('report', () => {
     report.log('error');
     expect(report.handleMsg).toBeCalled();
   });
+  describe('setOptions method', () => {
+    it('should return true ', () => {
+      report.setOptions({
+        version: '1.0.2'
+      });
+      expect(report.config.version).toEqual('1.0.2')
+    });
+  });
   describe('repeat method', () => {
     const error = new Error('test');
     it('should return false when not over config.repeat count', () => {
