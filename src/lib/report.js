@@ -115,7 +115,7 @@ class Report extends Events {
       const errorMsg = utils.typeDecide(msg, 'Object') ? msg : { msg };
       errorMsg.level = level;
       errorMsg.type = type;
-      errorMsg.time = Data.now();
+      errorMsg.time = Date.now();
       if (this.catchError(errorMsg)) {
         this.send();
       }
