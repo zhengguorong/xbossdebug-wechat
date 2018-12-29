@@ -12,10 +12,12 @@ class Report extends Events {
         this[type] = msg => this.handleMsg(msg, type, index);
       });
     }
+
     // options 动态设置
-    setOptions(options){
-      Object.assign(this.config, options)
+    setOptions(options) {
+      Object.assign(this.config, options);
     }
+
     // 重复出现的错误，只上报config.repeat次
     repeat(error) {
       const rowNum = error.rowNum || '';

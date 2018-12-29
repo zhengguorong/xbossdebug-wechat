@@ -17,20 +17,12 @@
       var parames = '';
       Object.keys(obj).forEach(function (name) {
         if (utils.typeDecide(obj[name], 'Object')) {
-          parames += name + '=' + utils.stringify(obj[name]);
+          parames += name + '=' + JSON.stringify(obj[name]);
         } else {
           parames += name + '=' + obj[name] + '^';
         }
       });
       return encodeURIComponent(parames.substr(0, parames.length - 1));
-    },
-    assignObject: function assignObject(obj1, obj2) {
-      for (var name in obj2) {
-        if (obj2.hasOwnProperty(name)) {
-          obj1[name] = obj2[name];
-        }
-      }
-      return obj1;
     },
     noop: function noop() {},
     now: function now() {
@@ -102,7 +94,7 @@
         random: 1, // 抽样上报，1~0 之间数值，1为100%上报（默认 1）
         repeat: 5 // 重复上报次数(对于同一个错误超过多少次不上报)
       };
-      this.config = utils.assignObject(this.config, options);
+      this.config = Object.assign(this.config, options);
     }
 
     createClass(Config, [{
@@ -123,227 +115,228 @@
   /**
    * 事件管理器
    */
-  var Events = function Events(supperclass) {
-    return function (_supperclass) {
-      inherits(_class, _supperclass);
+  var Events = function () {
+    function Events() {
+      classCallCheck(this, Events);
 
-      function _class(options) {
-        classCallCheck(this, _class);
+      this.handlers = {};
+    }
 
-        var _this = possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, options));
+    /**
+     * 事件注册
+     * @param {*} event 事件名字
+     * @param {*} handlers 执行函数
+     */
 
-        _this.handlers = {};
-        return _this;
+
+    createClass(Events, [{
+      key: "on",
+      value: function on(event, handlers) {
+        this.handlers[event] = this.handlers[event] || [];
+        this.handlers[event].push(handlers);
+        return this.handlers[event];
       }
 
       /**
-       * 事件注册
+       * 事件注销
        * @param {*} event 事件名字
-       * @param {*} handlers 执行函数
        */
 
-
-      createClass(_class, [{
-        key: "on",
-        value: function on(event, handlers) {
-          this.handlers[event] = this.handlers[event] || [];
-          this.handlers[event].push(handlers);
-          return this.handlers[event];
+    }, {
+      key: "off",
+      value: function off(event) {
+        if (this.handlers[event]) {
+          delete this.handlers[event];
         }
+      }
 
-        /**
-         * 事件注销
-         * @param {*} event 事件名字
-         */
+      /**
+       * 触发事件
+       * @param {*} event 事件名字
+       * @param {*} args 执行参数
+       */
 
-      }, {
-        key: "off",
-        value: function off(event) {
-          if (this.handlers[event]) {
-            delete this.handlers[event];
-          }
+    }, {
+      key: "trigger",
+      value: function trigger(event, args) {
+        var _this = this;
+
+        var arg = args || [];
+        var funcs = this.handlers[event];
+        if (funcs) {
+          return funcs.every(function (f) {
+            var ret = f.apply(_this, arg);
+            return ret !== false;
+          });
         }
+        return true;
+      }
+    }]);
+    return Events;
+  }();
 
-        /**
-         * 触发事件
-         * @param {*} event 事件名字
-         * @param {*} args 执行参数
-         */
+  var Report = function (_Events) {
+    inherits(Report, _Events);
 
-      }, {
-        key: "trigger",
-        value: function trigger(event, args) {
-          var _this2 = this;
+    function Report(options) {
+      classCallCheck(this, Report);
 
-          var arg = args || [];
-          var funcs = this.handlers[event];
-          if (funcs) {
-            return funcs.every(function (f) {
-              var ret = f.apply(_this2, arg);
-              return ret !== false;
-            });
-          }
-          return true;
-        }
-      }]);
-      return _class;
-    }(supperclass);
-  };
+      var _this = possibleConstructorReturn(this, (Report.__proto__ || Object.getPrototypeOf(Report)).call(this, options));
 
-  var Report = function Report(supperclass) {
-    return function (_supperclass) {
-      inherits(_class, _supperclass);
+      _this.errorQueue = []; // 记录错误队列
+      _this.repeatList = {}; // 记录重复异常数据
+      _this.config = new Config().config;
+      ['log', 'debug', 'info', 'warn', 'error'].forEach(function (type, index) {
+        _this[type] = function (msg) {
+          return _this.handleMsg(msg, type, index);
+        };
+      });
+      return _this;
+    }
 
-      function _class(options) {
-        classCallCheck(this, _class);
+    // options 动态设置
 
-        var _this = possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, options));
 
-        _this.errorQueue = []; // 记录错误队列
-        _this.repeatList = {}; // 记录重复异常数据
-        ['log', 'debug', 'info', 'warn', 'error'].forEach(function (type, index) {
-          _this[type] = function (msg) {
-            return _this.handleMsg(msg, type, index);
-          };
-        });
-        return _this;
+    createClass(Report, [{
+      key: 'setOptions',
+      value: function setOptions(options) {
+        Object.assign(this.config, options);
       }
 
       // 重复出现的错误，只上报config.repeat次
 
+    }, {
+      key: 'repeat',
+      value: function repeat(error) {
+        var rowNum = error.rowNum || '';
+        var colNum = error.colNum || '';
+        var repeatName = error.msg + rowNum + colNum;
+        this.repeatList[repeatName] = this.repeatList[repeatName] ? this.repeatList[repeatName] + 1 : 1;
+        return this.repeatList[repeatName] > this.config.repeat;
+      }
 
-      createClass(_class, [{
-        key: 'repeat',
-        value: function repeat(error) {
-          var rowNum = error.rowNum || '';
-          var colNum = error.colNum || '';
-          var repeatName = error.msg + rowNum + colNum;
-          this.repeatList[repeatName] = this.repeatList[repeatName] ? this.repeatList[repeatName] + 1 : 1;
-          return this.repeatList[repeatName] > this.config.repeat;
-        }
+      // 忽略错误
 
-        // 忽略错误
-
-      }, {
-        key: 'except',
-        value: function except(error) {
-          var oExcept = this.config.except;
-          var result = false;
-          var v = null;
-          if (utils.typeDecide(oExcept, 'Array')) {
-            for (var i = 0, len = oExcept.length; i < len; i++) {
-              v = oExcept[i];
-              if (utils.typeDecide(v, 'RegExp') && v.test(error.msg) || utils.typeDecide(v, 'Function') && v(error, error.msg)) {
-                result = true;
-                break;
-              }
+    }, {
+      key: 'except',
+      value: function except(error) {
+        var oExcept = this.config.except;
+        var result = false;
+        var v = null;
+        if (utils.typeDecide(oExcept, 'Array')) {
+          for (var i = 0, len = oExcept.length; i < len; i++) {
+            v = oExcept[i];
+            if (utils.typeDecide(v, 'RegExp') && v.test(error.msg)) {
+              result = true;
+              break;
             }
           }
-          return result;
         }
+        return result;
+      }
 
-        // 请求服务端
+      // 请求服务端
 
-      }, {
-        key: 'request',
-        value: function request(url, params, cb) {
-          if (!this.config.key) {
-            throw new Error('please set key in xbossdebug.config.key');
-          }
-          params.key = this.config.key;
-          wx.request({
-            url: url,
-            method: 'POST',
-            data: params,
-            success: cb
-          });
+    }, {
+      key: 'request',
+      value: function request(url, params, cb) {
+        if (!this.config.key) {
+          throw new Error('please set key in xbossdebug.config.key');
         }
-      }, {
-        key: 'report',
-        value: function report(cb) {
-          var _this2 = this;
+        params.key = this.config.key;
+        wx.request({
+          url: url,
+          method: 'POST',
+          data: params,
+          success: cb
+        });
+      }
+    }, {
+      key: 'report',
+      value: function report(cb) {
+        var _this2 = this;
 
-          var mergeReport = this.config.mergeReport;
+        var mergeReport = this.config.mergeReport;
 
-          if (this.errorQueue.length === 0) return this.config.url;
-          var curQueue = mergeReport ? this.errorQueue : [this.errorQueue.shift()];
-          if (mergeReport) this.errorQueue = [];
-          var url = this.config.url;
+        if (this.errorQueue.length === 0) return this.config.url;
+        var curQueue = mergeReport ? this.errorQueue : [this.errorQueue.shift()];
+        if (mergeReport) this.errorQueue = [];
+        var url = this.config.url;
 
-          var params = {
-            error: curQueue,
-            systemInfo: this.systemInfo,
-            breadcrumbs: this.breadcrumbs,
-            locationInfo: this.locationInfo,
-            networkType: this.networkType,
-            notifierVersion: this.config.version
-          };
-          this.request(url, params, function () {
-            if (cb) {
-              cb.call(_this2);
-            }
-            _this2.trigger('afterReport');
-          });
-          return url;
+        var params = {
+          error: curQueue,
+          systemInfo: this.systemInfo,
+          breadcrumbs: this.breadcrumbs,
+          locationInfo: this.locationInfo,
+          networkType: this.networkType,
+          notifierVersion: this.config.version
+        };
+        this.request(url, params, function () {
+          if (cb) {
+            cb.call(_this2);
+          }
+          _this2.trigger('afterReport');
+        });
+        return url;
+      }
+
+      // 发送
+
+    }, {
+      key: 'send',
+      value: function send(cb) {
+        var _this3 = this;
+
+        if (!this.trigger('beforeReport')) return;
+        var callback = cb || utils.noop;
+        var delay = this.config.mergeReport ? this.config.delay : 0;
+        setTimeout(function () {
+          _this3.report(callback);
+        }, delay);
+      }
+
+      // push错误到pool
+
+    }, {
+      key: 'catchError',
+      value: function catchError(error) {
+        var rnd = Math.random();
+        if (rnd >= this.config.random) {
+          return false;
         }
-
-        // 发送
-
-      }, {
-        key: 'send',
-        value: function send(cb) {
-          var _this3 = this;
-
-          if (!this.trigger('beforeReport')) return;
-          var callback = cb || utils.noop;
-          var delay = this.config.mergeReport ? this.config.delay : 0;
-          setTimeout(function () {
-            _this3.report(callback);
-          }, delay);
+        if (this.repeat(error)) {
+          return false;
         }
-
-        // push错误到pool
-
-      }, {
-        key: 'catchError',
-        value: function catchError(error) {
-          var rnd = Math.random();
-          if (rnd >= this.config.random) {
-            return false;
-          }
-          if (this.repeat(error)) {
-            return false;
-          }
-          if (this.except(error)) {
-            return false;
-          }
-          this.errorQueue.push(error);
-          return this.errorQueue;
+        if (this.except(error)) {
+          return false;
         }
+        this.errorQueue.push(error);
+        return this.errorQueue;
+      }
 
-        // 手动上报
+      // 手动上报
 
-      }, {
-        key: 'handleMsg',
-        value: function handleMsg(msg, type, level) {
-          if (!msg) {
-            return false;
-          }
-          var errorMsg = utils.typeDecide(msg, 'Object') ? msg : { msg: msg };
-          errorMsg.level = level;
-          errorMsg.type = type;
-          if (this.catchError(errorMsg)) {
-            this.send();
-          }
-          return errorMsg;
+    }, {
+      key: 'handleMsg',
+      value: function handleMsg(msg, type, level) {
+        if (!msg) {
+          return false;
         }
-      }]);
-      return _class;
-    }(supperclass);
-  };
+        var errorMsg = utils.typeDecide(msg, 'Object') ? msg : { msg: msg };
+        errorMsg.level = level;
+        errorMsg.type = type;
+        errorMsg.time = Date.now();
+        if (this.catchError(errorMsg)) {
+          this.send();
+        }
+        return errorMsg;
+      }
+    }]);
+    return Report;
+  }(Events);
 
-  var XbossDebug = function (_events) {
-    inherits(XbossDebug, _events);
+  var XbossDebug = function (_Report) {
+    inherits(XbossDebug, _Report);
 
     function XbossDebug(options) {
       classCallCheck(this, XbossDebug);
@@ -504,7 +497,7 @@
       }
     }]);
     return XbossDebug;
-  }(Events(Report(Config)));
+  }(Report);
 
   var xbossdebug = new XbossDebug();
 
