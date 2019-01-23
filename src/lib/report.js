@@ -72,7 +72,7 @@ class Report extends Events {
         breadcrumbs: this.breadcrumbs,
         locationInfo: this.locationInfo,
         networkType: this.networkType,
-        currentPage: this.activePage,
+        currentPage: this.activePage.route,
         notifierVersion: this.config.version,
       };
       this.request(url, params, () => {
