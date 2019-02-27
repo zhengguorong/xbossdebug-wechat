@@ -18,9 +18,11 @@
     "collectCoverage": true,
     "coverageDirectory": "./coverage/",
     "testPathIgnorePatterns": [
-      "./__tests__/wx.js"   
+      "./__tests__/wx.js"
     ],
-    "setupFiles": ["./__tests__/wx.js"]
+    "setupFiles": [
+      "./__tests__/wx.js"
+    ]
   },
   "repository": {
     "type": "git",
