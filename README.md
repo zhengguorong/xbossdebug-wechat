@@ -120,3 +120,7 @@ npm run build
 **代码思想参考[fundebug](https://www.fundebug.com/)，如果大家觉得还不错，希望大家支持fundebug的saas服务。**
 
 **代码风格参考https://github.com/gomeplusFED/GER**
+
+## License
+
+[996 License](https://github.com/zhengguorong/h5maker/blob/master/LICENSE)
